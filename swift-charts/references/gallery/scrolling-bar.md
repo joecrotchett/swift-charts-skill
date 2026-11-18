@@ -23,13 +23,17 @@ struct ScrollingBarChartRecipe: View {
     /// The leading edge of the visible window. Read it to summarise what is on screen.
     @Binding var scrollPosition: Date
 
+    /// The calendar the dates were recorded in: days are cut in it, not in the device's (`data.md`).
+    var calendar = Calendar(identifier: .gregorian)
+    @Environment(\.locale) private var locale
+
     private let visibleSeconds = 3600 * 24 * 30
 
     var body: some View {
         Chart {
             ForEach(days) { item in
                 BarMark(
-                    x: .value("Day", item.day, unit: .day),
+                    x: .value("Day", item.day, unit: .day, calendar: calendar),
                     y: .value("Cups", item.cups)
                 )
             }
@@ -45,11 +49,10 @@ struct ScrollingBarChartRecipe: View {
         )
         .chartScrollPosition(x: $scrollPosition)
         .chartXAxis {
-            AxisMarks(values: .stride(by: .day, count: 7)) {
-                AxisTick()
-                AxisGridLine()
-                AxisValueLabel(format: .dateTime.month().day())
-            }
+            AxisMarks(
+                format: Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month().day(),
+                values: .stride(by: .day, count: 7, calendar: calendar)
+            )
         }
     }
 }

@@ -33,17 +33,17 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 - Square-root, power and symmetric-log scales are gated at iOS 16.4. (`scales.md`)
 - No force unwraps: every `ChartProxy` result, `plotFrame` included, is unwrapped, and a `chartForegroundStyleScale` closure has a fallback for unknown values. (`plot-area.md`, `scales.md`)
 - `lineStyle(_:)` always sets `lineWidth`, and `lineCap` and `lineJoin` too where a line's default ends and joins should be kept; the style passed replaces all of them. (`mark-modifiers.md`)
-- `symbolSize(by:)` is paired with `chartSymbolSizeScale(range:)`. (`mark-modifiers.md`)
+- `symbolSize(by:)` is paired with `chartSymbolSizeScale`: `range:` for a quantity, a mapping of sizes for categories. (`mark-modifiers.md`)
 - `symbol(by:)` encodes a categorical value. (`mark-modifiers.md`)
 - A bare line is a `LineMark`, not an `AreaMark` with a clear fill. (`marks.md`, `gallery/area.md`)
 - A recurring chart element is a `ChartContent` type, not copied between charts, and sets inside itself only the styles a caller must not change. (`composition.md`)
 - A `SurfacePlot` or function plot returns `Double.nan` where the function is undefined. (`chart3d.md`, `vectorized-plots.md`)
-- A region or band is a `RectangleMark` with start and end values, declared before the marks it sits behind. (`marks.md`)
+- A region or band is a `RectangleMark` with start and end values, or for one whole unit an x value with `unit:` and `width: .ratio(1)`, declared before the marks it sits behind. (`marks.md`)
 - A 3D rule has one range and two single values; a 3D rectangle two ranges and one single value. (`chart3d.md`)
 
 ## Data and scales
 
-- Dates that stand for a day, week or month are plotted with `unit:` on bars and points (on an area it costs half a period of empty plot at each side, a choice to make knowingly), the same unit on every mark sharing the axis. Dates recorded in another time zone pass that calendar to the value and to the axis. (`data.md`)
+- Dates that stand for a day, week or month are plotted with `unit:` on bars and on points that stand alone (on an area it costs half a period of empty plot at each side, a choice to make knowingly), the same unit on every mark sharing the axis, so a point marking a line drawn without one takes none. Dates recorded in another time zone pass that calendar to the value and to the axis. (`data.md`)
 - Identifiers stored as numbers are converted to strings before being used as categories. (`data.md`)
 - Bars and stacked segments are ordered by ordering the data, and are ranked when the chart's message is which is largest or smallest, unless the same categories keep one order across several views. (`gallery/bar.md`, `composition.md`, `design.md`)
 - A plain bar chart has one row per category; several rows silently stack into one bar. (`marks.md`)
@@ -60,13 +60,17 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 
 - A selection value is snapped to the data before it is used. (`interaction.md`)
 - Charts meant to be read together share a selection and an x domain. (`gallery/linked-charts.md`)
-- A nearest-point selection on two axes accepts a point only within a small distance of the touch. (`interaction.md`)
-- A gesture's location has the plot area's origin subtracted before it goes to `ChartProxy`. (`plot-area.md`)
+- A nearest-point selection on two axes accepts a point only within a small distance of the touch, measured in a unit both axes share (fractions of each span, or screen points), not raw data units. (`interaction.md`)
+- An overlay gesture's location has the plot area's origin subtracted before it goes to `ChartProxy`; a `chartGesture` location is already plot-relative and is passed as it is. (`plot-area.md`)
 - A gesture position outside the plot area is rejected before it is converted to a value. (`plot-area.md`)
 - A custom gesture on iOS 17+ drives the chart's selection through the proxy instead of keeping a parallel state. (`interaction.md`)
+- A chart in a vertical scroll view still lets a swipe that starts on it scroll the page: no plain drag gesture in its overlay. (`interaction.md`)
+- No control outside the chart acts only on a live touch selection, which ends when the finger lifts. (`interaction.md`)
+- A headline that follows the selection or the scroll position keeps one height, the longest it can show in the current locale, so the chart does not move under the finger. (`gallery/selection-line.md`)
 - A fixed overlay on a scrolling chart uses `plotContainerFrame`. (`plot-area.md`)
 - A scrolling chart comes to rest on meaningful values with `.valueAligned`: `matching:` for dates (midnight for daily bars), `unit:` for numbers. (`interaction.md`)
 - A sector selection is mapped through cumulative ranges. (`interaction.md`)
+- State a selection changes is read in the view's body, not only inside `Chart(data)`'s per-element closure. (`interaction.md`)
 - The selection indicator is a mark in the chart. (`interaction.md`)
 - A label below a zero-based bar has the scale's domain fixed, or is moved above or inside the bar. (`annotations.md`)
 - A switch that changes what the marks stand for (days to months) is not animated; new values for the same categories are. (`composition.md`)
@@ -77,7 +81,7 @@ Judgement first, then the specifics.
 
 - The chart was designed from a stated goal and shows the few things that goal needs, checked against real data including zeros, gaps and outliers. With no data, it shows a placeholder, not a blank space or an empty plot; so does a chart of only zeros whose marks grow from zero (bars, areas, sectors). Points at zero are real marks and are drawn. (`design.md`)
 - The chart has a point, stated in a visible title or headline; data people only need to look up is in a list or table. (`design.md`)
-- The headline is true of the chart as drawn, and is still true when a control changes the chart. (`design.md`)
+- The headline is true of the chart as drawn, and is still true when a control changes the chart. It names no mark that draws nothing: a bar of zero has no top and no colour. (`design.md`)
 - Every other sentence beside the chart (a note, an explanation) is true of the chart as it is now drawn, including when the device's own text size or layout direction, not a control, produced it. (`design.md`)
 - The mark matches what is being communicated: bars for comparison and totals, a line for change, points for relationships. (`design.md`)
 - Axis labels follow a familiar sequence. (`design.md`)
@@ -104,7 +108,7 @@ Judgement first, then the specifics.
 - The unit of every axis is stated once where the reader will see it: in the heading, in an axis title, or in the axis labels' format. There are no more axis labels than the reader needs, and values in the millions have an explicit format; the automatic one is scientific notation. (`design.md`, `axes.md`)
 - Category labels fit: none are truncated to an ellipsis at the smallest supported width. (`axes.md`)
 - Custom axis labels are checked at phone width. (`gallery/custom-axes.md`)
-- `centered:` is true on a date axis label only when every unit is labelled; with a longer stride it puts the label mid-stride. (`axes.md`)
+- `centered:` is true on a date axis label only when there is an axis mark at every unit (labels may still be left out on some); with a longer stride it puts the label mid-stride. (`axes.md`)
 - A smoothed line uses `.monotone` when its peaks must be real values; a value that holds until it changes uses a stepped line. (`mark-configuration.md`)
 - Category names on a horizontal chart are moved outside the plot when they squeeze the rows' height; where width is the constraint they stay inside. (`axes.md`, `design.md`)
 
@@ -115,7 +119,11 @@ Elements:
 - Each accessibility element covers what the chart's purpose calls for: a mark, a portion, or the whole chart. (`accessibility.md`)
 - Labels and values are on a `Plot` around the mark or marks, not on a bare mark that can share its element; a rule across the plot is its own element and is labelled directly, or through a labelled `Plot` around it. (`accessibility.md`)
 - A control that changes element text without changing the data's ids gives the chart a new identity (`.id(state)`), or VoiceOver keeps the old text. (`accessibility.md`)
-- A custom `ChartContent` made of several marks wraps them in one `Plot`. (`accessibility.md`)
+- A custom `ChartContent` made of several marks wraps the ones carrying data in one `Plot`; marks that are only decoration (axis lines, a frame) are hidden. (`accessibility.md`)
+- A legend that changes with state is one `chartLegend` chain given a `Visibility`, not a conditional modifier around the chart. (`legend.md`)
+- A view placed from the `ChartProxy` lands on the right mark in right to left, and an overlay that draws from `plotFrame` is clipped. (`plot-area.md`)
+- While a placeholder replaces the chart, a control that would change or announce what is drawn is disabled. (`design.md`)
+- A control shown as a mistake is a mistake in every state of the other controls; where it changes nothing wrong, it is an ordinary control. (`design.md`)
 - Labels give context first, then the value, with units and dates written out, in actual values and not words like "rapidly", naming what a series is and not its colour. (`accessibility.md`)
 - A target or average rule has a label and a value with its unit; a selection indicator is hidden. (`accessibility.md`)
 - Decoration and any layer that repeats another's data (a gauge's track, an area under a line, points over a line) are hidden with `accessibilityHidden`. (`accessibility.md`)
@@ -132,7 +140,7 @@ Audio Graph:
 Beyond VoiceOver:
 
 - Axis labels still fit at the accessibility text sizes; their number adapts to `dynamicTypeSize` where they would not. (`accessibility-beyond-voiceover.md`)
-- A change to what the chart draws (its data, scale or kind of mark) is announced, not only animated, and the announcement follows every control that redraws the chart; a restyling control that speaks its own value needs none. (`accessibility-beyond-voiceover.md`)
+- A change to what the chart draws (its data, scale or kind of mark) is announced, not only animated, and the announcement follows every control that redraws the chart; a restyling control that speaks its own value needs none unless the headline changes with it. (`accessibility-beyond-voiceover.md`)
 - The elements were read, in Accessibility Inspector or with VoiceOver, not assumed. (`accessibility.md`)
 
 ## Large data sets

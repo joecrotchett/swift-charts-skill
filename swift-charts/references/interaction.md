@@ -15,8 +15,13 @@ Each has a default gesture that differs by platform, and a chart can carry both 
 
 | Selection | iOS | macOS |
 |---|---|---|
-| A value | Touch and drag | Hover |
-| A range | Two-finger tap | Drag |
+| A value | Touch and hold, or press and drag | Hover |
+| A range | Two-finger tap (not yet checked by a press) | Drag |
+
+**On iOS a value selection lasts only while the finger is down** (pressed on the iOS simulator, chart inside a vertical `ScrollView`). A tap selects nothing, lifting the finger sets the binding back to `nil`, and a vertical swipe that starts on the plot scrolls the page and leaves no selection. Two consequences:
+
+- Nothing that acts only on a live selection can sit outside the chart. A toggle or slider that changes how the selection is drawn cannot be reached while the selection exists, so it changes nothing anyone sees.
+- Whatever a selection reveals has to be reachable another way, normally through the chart's own elements (`accessibility.md`), since a VoiceOver user does not hold a finger on the plot.
 
 <!-- snippet: Interaction/ProxySnippets.swift#value-and-range -->
 ```swift
@@ -45,6 +50,8 @@ Recipe: `gallery/selection-line.md`.
 
 `chartXSelection` and `chartYSelection` can be bound on the same chart. Together they give the position of the touch in data values, which is how a scatter plot or a map selects the point nearest the finger. Accept the nearest point only within a small distance, so touching empty space selects nothing, and hide the highlight mark from assistive technologies, since it repeats a point that is already described.
 
+Measure that distance in a unit the two axes share. In data units, an axis spanning hundreds swamps one spanning ten: on a chart of waits (0 to 360 seconds) against queue length (0 to 12 people), one person is about 25 points on screen and one second about half a point. Divide each axis's difference by its span, as below, or for a radius in screen points convert both positions with the proxy (`plot-area.md`).
+
 <!-- snippet: Dashboard/DashboardPatterns.swift#nearest-point -->
 ```swift
 /// Selecting on both axes at once, to find the point nearest the touch.
@@ -56,11 +63,17 @@ struct NearestPointScatter: View {
 
     private var nearest: Bean? {
         guard let selectedAcidity, let selectedBody else { return nil }
-        func distance(_ bean: Bean) -> Double {
-            hypot(bean.acidity - selectedAcidity, bean.body - selectedBody)
+        // The axes have different units, so measure each as a fraction of its own extent:
+        // a step of one unit of body and one of acidity are not the same distance on screen.
+        func span(_ values: [Double]) -> Double {
+            max((values.max() ?? 0) - (values.min() ?? 0), .ulpOfOne)
         }
-        // Nothing is selected unless the touch is close to a point.
-        return beans.filter { distance($0) < 0.5 }.min { distance($0) < distance($1) }
+        let acidityRange = span(beans.map(\.acidity)), bodyRange = span(beans.map(\.body))
+        func distance(_ bean: Bean) -> Double {
+            hypot((bean.acidity - selectedAcidity) / acidityRange, (bean.body - selectedBody) / bodyRange)
+        }
+        // Nothing is selected unless the touch is close to a point: here within 5% of the plot.
+        return beans.filter { distance($0) < 0.05 }.min { distance($0) < distance($1) }
     }
 
     var body: some View {
@@ -75,7 +88,8 @@ struct NearestPointScatter: View {
                     .symbolSize(90)
                     // The highlight repeats a point that is already described.
                     .accessibilityHidden(true)
-                    .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                    // Fitted to the plot, so near the top it does not cover the axis titles.
+                    .annotation(position: .top, overflowResolution: .init(x: .fit(to: .plot), y: .fit(to: .plot))) {
                         Text("\(nearest.origin), sweetness \(nearest.sweetness, format: .number.precision(.fractionLength(1)))")
                             .font(.caption)
                             .padding(4)
@@ -95,17 +109,20 @@ For bars, a `RectangleMark` with only an x value and `width: .ratio(1)` shades t
 
 ### Linking charts
 
-Charts that bind `chartXSelection` to the same value share a selection: touching one highlights the same position in all of them, and other views can filter to it. Keep the value in a shared model when the charts live in different views. The charts need the same x domain, so the shared value falls at the same place in each: give them the same `chartXScale(domain:)` unless they are certain to cover the same span. Recipe: `gallery/linked-charts.md`.
+Charts that bind `chartXSelection` to the same value share a selection: touching one highlights the same position in all of them, and other views can filter to it. Keep the value in a shared model when the charts live in different views. The charts need the same x domain, so the shared value falls at the same place in each: give them the same `chartXScale(domain:)` unless they are certain to cover the same span, and the same y domain where they can, so their axis labels and so their plots are the same width. A chart with no record for the selected day draws no band there; say so in any text that promises a band in every chart. Recipe: `gallery/linked-charts.md`.
 
 ### `chartAngleSelection` - iOS 17.0+
 
-**Use for:** letting people tap or drag around a pie or donut.
+**Use for:** letting people touch and hold, or drag, around a pie or donut. On iOS it behaves like a value selection (pressed on the iOS simulator): a held press selects, a tap leaves nothing selected, and lifting the finger sets the binding back to `nil`, so a label in the hole that names the selection shows only while the finger is down.
 
-`chartAngleSelection(value:)` binds an optional value of the angle's type. The value is a position along the running total of all sectors' values, not the touched element. With sectors of 916, 760 and 540, a touch in the second sector reports something between 916 and 1676. Map it to an element by accumulating the values until the total passes it.
+`chartAngleSelection(value:)` binds an optional number; the recipe binds `Double?` for sectors whose angle is an `Int`. The value is a position along the running total of all sectors' values, not the touched element. With sectors of 916, 760 and 540, a touch in the second sector reports something between 916 and 1676. Map it to an element by accumulating the values until the total passes it.
 
 Recipe: `gallery/donut.md`.
 
-**Pitfalls:** treating the value as an element's own value selects the wrong sector or none.
+**Pitfalls:**
+
+- Treating the value as an element's own value selects the wrong sector or none.
+- **Read the selection in the view's body, not only inside `Chart(data) { item in ... }`.** That closure runs outside the body, so when the selection lives in an `@Observable` model and is read only there, a change does not redraw the marks: under a held press the headline above changed and the sectors did not fade (pressed on the iOS simulator). Reading it in the body and passing plain values into the closure (the set of faded sectors, the labels) fixed it.
 
 ## Scrolling
 
@@ -162,6 +179,8 @@ extension View {
 }
 ```
 
+`valueAligned(matching:)` takes no calendar. On a simulator six hours behind UTC, charts of days recorded at UTC midnight came to rest on UTC day boundaries, with `DateComponents(hour: 0)` alone and with a UTC calendar and time zone set in the components; they did not rest at the device's midnight. Name the data's calendar in the components anyway, so the rule says which midnight is meant.
+
 For behaviour none of these gives, conform a type to `ChartScrollTargetBehavior` and implement `updateTarget(_:context:)`. The context has the scroll view's usual properties and a `chartProxy` for converting the proposed offset to data values.
 
 ### Scrolling below iOS 17
@@ -194,7 +213,7 @@ struct ScrollingChartFallback: View {
 
 Interaction the selection and scrolling modifiers do not cover is built with a gesture of your own and `ChartProxy` (`plot-area.md`), which turns the gesture's location into a data value.
 
-**On iOS 17 and later, drive the chart's own selection.** `chartGesture` receives the proxy; call `selectXValue(at:)` (or the y, range and angle forms) and the value arrives through the same `chartXSelection` binding, so the rest of the chart is written exactly as for the built-in gesture. `chartGesture` overrides the default selection gesture. Use it to select on tap instead of on drag, or with a long press:
+**On iOS 17 and later, drive the chart's own selection.** `chartGesture` receives the proxy; call `selectXValue(at:)` (or `selectXRange(from:to:)`, the y forms and the angle form, all iOS 17) and the value arrives through the same `chartXSelection` binding, so the rest of the chart is written exactly as for the built-in gesture. `chartGesture` overrides the default selection gesture. Use it to select on tap instead of on drag, or with a long press. Its gesture's location is measured from the plot area, so it goes to the proxy as it is. A selection made this way stays after the finger lifts (pressed), unlike the built-in one, so give the reader a way to clear it; a tap on the axis labels selects nothing:
 
 <!-- snippet: Interaction/ProxySnippets.swift#chart-gesture -->
 ```swift
@@ -264,3 +283,4 @@ extension View {
 
 - Forgetting to subtract the plot area's origin in an overlay gesture (`plot-area.md`).
 - An overlay that is not hit-testable receives nothing. Give the clear shape a `contentShape`.
+- **A drag gesture in `chartOverlay` takes the page's vertical swipes.** In a vertical `ScrollView`, a swipe that starts on the chart does not scroll the page; it starts the drag. A SwiftUI `LongPressGesture` sequenced before the `DragGesture` does not fix it, on `.gesture` or `.simultaneousGesture` (both pressed on the iOS simulator). The built-in selection does not have the problem, so prefer it. Where an overlay drag is needed on iOS 18 or later, a UIKit `UILongPressGestureRecognizer` attached through `UIGestureRecognizerRepresentable`, with a short minimum press, lets a swipe scroll the page and a held drag select (pressed).

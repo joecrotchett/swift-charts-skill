@@ -90,7 +90,7 @@ Four modifiers apply to a `Plot`, and to marks:
 
 Label and value accept a string, a `Text`, a `LocalizedStringKey` or a `LocalizedStringResource`, so they can be localized like any other text.
 
-**On a bare mark a label is unreliable.** It is read when the mark is alone in its element. On stacked or grouped bars, several series, a heat map, or an axis dense enough to be merged it is ignored and the automatic summary is read; on the marks of a custom `ChartContent` it can land on each inner mark separately. The key-path forms on vectorized plots are not read at all (`vectorized-plots.md`). `accessibilityHidden` works on a bare mark everywhere.
+**On a bare mark a label is unreliable.** It is read when the mark is alone in its element. On stacked or grouped bars, several series, a heat map, or an axis dense enough to be merged it is ignored and the automatic summary is read; on the marks of a custom `ChartContent` it can land on each inner mark separately. The key-path forms on vectorized plots are not read at all (`vectorized-plots.md`). A labelled `Plot` around a function `LinePlot` is one element with that label and value. `accessibilityHidden` works on a bare mark everywhere.
 
 **A rule across the plot is the exception:** it is always an element of its own, so label it directly.
 

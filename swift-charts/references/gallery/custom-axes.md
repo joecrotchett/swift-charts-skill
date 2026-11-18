@@ -43,22 +43,25 @@ func percentAxisWithMinorGridLines() -> some View {
 
 <!-- snippet: Axes/AxisRecipes.swift#conditional -->
 ```swift
-func hourAxis(every hours: Int = 3) -> some View {
-    chartXAxis {
-        AxisMarks(values: .stride(by: .hour, count: hours)) { value in
+/// `calendar` is the one the dates were made in, and `locale` the view's (`data.md`).
+func hourAxis(every hours: Int = 3, calendar: Calendar, locale: Locale) -> some View {
+    let format = Date.FormatStyle(locale: locale, timeZone: calendar.timeZone)
+    return chartXAxis {
+        AxisMarks(values: .stride(by: .hour, count: hours, calendar: calendar)) { value in
             if let date = value.as(Date.self) {
-                let hour = Calendar.current.component(.hour, from: date)
+                let hour = calendar.component(.hour, from: date)
                 AxisValueLabel {
                     VStack(alignment: .leading) {
-                        // AM or PM only where it changes.
+                        // AM or PM only where it changes. Formatted to a string first:
+                        // `Text(date, format:)` would use the device's time zone.
                         if hour == 0 || hour == 12 {
-                            Text(date, format: .dateTime.hour())
+                            Text(date.formatted(format.hour()))
                         } else {
-                            Text(date, format: .dateTime.hour(.defaultDigits(amPM: .omitted)))
+                            Text(date.formatted(format.hour(.defaultDigits(amPM: .omitted))))
                         }
                         // The date under the first label and at each midnight.
                         if value.index == 0 || hour == 0 {
-                            Text(date, format: .dateTime.month().day())
+                            Text(date.formatted(format.month().day()))
                         }
                     }
                 }
@@ -96,7 +99,7 @@ func hourAxis(every hours: Int = 3) -> some View {
 
 ![A bar chart with its number labels on the left.](../../assets/gallery/axis-leading.png)
 
-**Styled parts:** orange dashed grid lines, longer ticks, bold vertical category labels. Code under *Styling a whole axis* in `../axes.md`.
+**Styled parts:** orange dashed grid lines, longer ticks, bold vertical category labels. Code under *Styling axis marks and whole axes* in `../axes.md`.
 
 ![A bar chart with orange dashed grid lines and category names turned to read top to bottom.](../../assets/gallery/axis-styled.png)
 

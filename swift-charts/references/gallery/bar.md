@@ -26,7 +26,7 @@ Chart(sales) { item in
 
 ## Variations
 
-**Horizontal bars with a styled plot area.** Use horizontal bars when category names are long or there are many categories. `chartPlotStyle` styles the plot area alone, leaving the axis labels outside it.
+**Horizontal bars with a styled plot area.** Use horizontal bars when category names are long or there are many categories. `chartPlotStyle` styles the plot area alone: the cup values stay outside it, while the drink names, drawn inside the plot above each bar, sit on its background.
 
 ![Five pink horizontal bars on a pale pink plot area with a pink border.](../../assets/gallery/bar-horizontal.png)
 

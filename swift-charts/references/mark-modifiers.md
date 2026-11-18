@@ -38,7 +38,7 @@ The `StrokeStyle` you pass replaces the mark's default line width and line cap, 
 | Modifier | iOS | Does |
 |---|---|---|
 | `opacity(_:)` | 16.0 | Fades a mark. Used to de-emphasise all but one element, or to keep overlapping marks visible. The legend's swatches stay at full strength |
-| `cornerRadius(_:style:)` | 16.0 | Rounds bars, rectangles and sectors. A bar rising from the baseline is rounded at its free end only |
+| `cornerRadius(_:style:)` | 16.0 | Rounds bars, rectangles and sectors. A bar's free end already has a slight rounding without it. A bar rising from the baseline is rounded at its free end only; on a stack, only the top segment's free end |
 | `interpolationMethod(_:)` | 16.0 | How line and area marks connect their points, for example `.catmullRom` or `.stepEnd` |
 | `blur(radius:)` | 16.4 | Gaussian blur |
 | `shadow(color:radius:x:y:)` | 16.4 | Drop shadow |
@@ -51,14 +51,18 @@ The `StrokeStyle` you pass replaces the mark's default line width and line cap, 
 
 **Use for:** moving or stretching a mark by a distance in points, independent of the data.
 
-- `offset(x:y:)` moves the whole mark.
+- `offset(x:y:)` moves the whole mark, in points, without changing its value; `offset(_:)` takes the same as a `CGSize`.
 - `offset(x:yStart:yEnd:)`, `offset(xStart:xEnd:y:)` and `offset(xStart:xEnd:yStart:yEnd:)` move one end, for marks that have a start and an end such as bars and rules. `offset(yStart: -10)` extends a vertical rule 10 points past the top of the plot (`gallery/selection-line.md`).
+- Start and end are edges on screen, not the data's start and end: `yStart` moves the mark's top edge and `yEnd` its bottom edge, positive downward, whatever order the values were given in; `xStart` and `xEnd` move the leading and trailing edges. To inset the top of a bar by 5 points write `offset(yStart: 5)`.
+- On a vertical `RuleMark`, `xStart` and `xEnd` do nothing; use `offset(x:)` to move it. On a `BarMark` both work: equal values move the bar, opposite values widen it.
+- Horizontal offsets mirror in a right-to-left layout with the rest of the chart, so describe a nudged mark as first or second, not left or right.
+- An inset is not limited to the mark's length: `offset(yStart: 10)` on a bar of zero height draws 10 points of bar below the baseline. Apply an inset only to marks long enough to take it.
 
 ### `alignsMarkStylesWithPlotArea` - iOS 16.0+
 
 **Use for:** making a gradient (or any style with geometry) span the whole plot area instead of each mark.
 
-Without it, every bar is filled with the full gradient, so a short bar and a tall bar both run from the first colour to the last. With it, the gradient is laid across the plot area and each mark shows the part it covers, so colour corresponds to height.
+Without it, every bar is filled with the full gradient, so a short bar and a tall bar both run from the first colour to the last. With it, the gradient is laid across the plot area and each mark shows the part it covers, so colour corresponds to height. The argument defaults to `true`, so `.alignsMarkStylesWithPlotArea()` with none means aligned. The plot area runs to the top of the scale's domain, not the tallest mark, so with an automatic domain no bar reaches the last colour; fix the domain to the data's maximum if the tallest bar should.
 
 <!-- snippet: Marks/MarkModifiers.swift#gradient -->
 ```swift
@@ -170,14 +174,14 @@ Chart {
 
 ### `zIndex` - iOS 17.0+
 
-**Use for:** controlling which of two overlapping marks is in front. The default is 0; a negative value puts a mark behind the rest, wherever it is written in the chart. Example: `gallery/selection-line.md`.
+**Use for:** controlling which of two overlapping marks is in front. The default is 0; a negative value puts a mark behind the rest, wherever it is written in the chart. Marks with the same value keep their written order, later in front. A negative value also puts the mark behind the grid lines, which then draw across it: fine for a selection rule, wrong for a bar, so to send one series of bars back raise the other instead. Example: `gallery/selection-line.md`.
 
 ## Masking and clipping
 
 | Modifier | iOS | Does |
 |---|---|---|
 | `clipShape(_:style:)` | 16.0 | Clips each mark to a shape that fills the mark's frame. `clipShape(Capsule())` on a bar gives a pill with both ends rounded |
-| `mask(content:)` | 16.0 | Masks a mark with the alpha channel of other chart content |
+| `mask(content:)` | 16.0 | Masks a mark with the alpha channel of other chart content: marks written in the closure, laid out on the chart's own scales. `bar.mask { RectangleMark(yStart: .value("From", 0), yEnd: .value("To", 20)) }` keeps the part of the bar between 0 and 20 |
 
 <!-- snippet: Marks/MarkModifiers.swift#shape -->
 ```swift

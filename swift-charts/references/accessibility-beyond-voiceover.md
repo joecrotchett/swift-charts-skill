@@ -4,9 +4,9 @@ What a chart owes people who navigate without touch, who do not tell colours apa
 
 ## Navigation
 
-Keyboard commands, Full Keyboard Access and Switch Control visit elements one after another, by default in the order of the data. In an interactive chart, make that path logical:
+Keyboard commands, Full Keyboard Access and Switch Control visit elements one after another. In an interactive chart, make that path logical:
 
-- Give the elements a predictable order, such as along the x axis, instead of one that jumps back and forth. Elements come in the order of the chart's content, so order the data.
+- Give the elements a predictable order, such as along the x axis, instead of one that jumps back and forth. On iOS the elements come in order of their place on screen, not the data's: a scatter plot's points roughly top to bottom, a donut's sectors by position (both read on the iOS simulator). Bars and lines along a category or date axis come out along x, which is usually the order wanted. Sorting the data does not change this; say the order truthfully rather than promising one.
 - For a very large dataset, let focus move between subsets of values, not through every point.
 
 Both also improve VoiceOver, including on charts that are not interactive.
@@ -23,7 +23,7 @@ Make the whole plot the target for touch too (`design.md`, *Interaction*).
 
 ## Changes and motion
 
-When marks or axes change (a new period, a new scale, a different kind of mark), people who do not notice misread the chart. Animation draws attention to the change, and is not enough: people using VoiceOver and people who have turned animations off need to be told another way. Post an accessibility announcement when the chart's content changes, saying what changed and what the chart now shows. Build the message from every control that redraws the chart, or the one left out changes it silently. As a convention: announce a change to the chart's data, scale or kind of mark, as one sentence on what changed followed by the headline; a control that only restyles the marks or moves labels, and already speaks its own value (a slider, a picker for where row names go), needs no announcement. A slider that changes what is drawn should not post one on every step either: make its spoken value the setting followed by the headline:
+When marks or axes change (a new period, a new scale, a different kind of mark), people who do not notice misread the chart. Animation draws attention to the change, and is not enough: people using VoiceOver and people who have turned animations off need to be told another way. Post an accessibility announcement when the chart's content changes, saying what changed and what the chart now shows. Build the message from every control that redraws the chart, or the one left out changes it silently. As a convention: announce a change to the chart's data, scale or kind of mark, as one sentence on what changed followed by the headline; a control that only restyles the marks or moves labels, and already speaks its own value (a slider, a picker for where row names go), needs no announcement, unless the headline changes with it. A scale's range counts as restyling (padding, the range of symbol sizes); its domain, its type and which colour or shape each value gets change what the chart says, and are announced. Whatever changes the headline is announced, with one exception: what a reader's own touch moves, a selection or a scroll position, is not announced, since it changes the headline on every step of a drag and the reader is already looking at it. The same days reach VoiceOver users through the chart's elements, which they move through without a gesture. What a control shows and what it speaks describe the setting the same way (not "6 points" on screen and "6 points each way" aloud); a spoken value may add the headline after it, as below. A slider or stepper that changes what is drawn should not post one on every step either: make its spoken value the setting followed by the headline (or the headline alone when the control's label already shows the setting, as a stepper in a row showing its count does, or the count is spoken twice):
 
 <!-- snippet: Accessibility/AccessibilitySnippets.swift#announce-change -->
 ```swift
@@ -46,7 +46,7 @@ A chart whose data changes many times a second, such as a live level meter, take
 
 The framework's own axis labels and legend follow Dynamic Type without any code (`composition.md`). The number of labels does not: at the accessibility sizes, labels that fitted can collide or be cut short. On a horizontal bar chart the category names sit inside the plot, above each row, and take their height from the bars: in a fixed-height chart the bars shrink to strips at the largest sizes. Let the chart's height grow with the text (`@ScaledMetric`), or move the names outside the plot (`axes.md`, `AxisMarkPreset`).
 
-For the labels along an axis, read `dynamicTypeSize` from the environment and ask for fewer. At the largest sizes fewer may still not be enough for a date label such as "Mar 1" on a phone: shorten the format as well (the day alone). A label at the plot's trailing edge needs the room `axes.md` describes:
+For the labels along an axis, read `dynamicTypeSize` from the environment and ask for fewer. An exact array of values is always drawn in full, so thin the array itself. At the largest sizes fewer may still not be enough for a date label such as "Mar 1" on a phone: shorten the format as well (the day alone). A label at the plot's trailing edge needs the room `axes.md` describes:
 
 <!-- snippet: Community/CommunityPatterns.swift#dynamic-type-axis -->
 ```swift

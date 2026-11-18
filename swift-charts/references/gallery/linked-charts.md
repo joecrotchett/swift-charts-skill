@@ -10,7 +10,7 @@ Two or more charts on one screen, usually sharing an axis, where the same period
 
 - Each chart binds `chartXSelection` to the same value. Minimum iOS 17.0.
 - A `RectangleMark` band, written once as a `ChartContent` type, drawn in every chart while a selection exists.
-- The same x domain on every chart, and the same y domain where heights should compare.
+- The same x domain on every chart, covering all their days, so a day falls at the same place even when one chart's records start later; and the same y domain where heights should compare, which also keeps the plots the same width.
 
 <!-- snippet: Dashboard/DashboardPatterns.swift#linked -->
 ```swift
@@ -19,6 +19,16 @@ Two or more charts on one screen, usually sharing an axis, where the same period
 struct LinkedCharts: View {
     let stores: [StoreSales]
     @State var selectedDay: Date?
+    /// The calendar the dates were recorded in (`data.md`).
+    var calendar = Calendar(identifier: .gregorian)
+
+    /// Every chart's days, from the first to the end of the last, so a day falls at the same place in each
+    /// even when one store's records start later.
+    private var sharedDays: ClosedRange<Date> {
+        let days = stores.flatMap(\.days).map(\.day)
+        let first = days.min() ?? .now, last = days.max() ?? .now
+        return first ... (calendar.date(byAdding: .day, value: 1, to: last) ?? last)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -35,7 +45,9 @@ struct LinkedCharts: View {
                         )
                     }
                 }
-                // The same domain and the same binding on every chart.
+                // The same domains and the same binding on every chart. The shared y domain also gives every
+                // chart the same axis labels, so their plots are the same width and the days line up.
+                .chartXScale(domain: sharedDays)
                 .chartYScale(domain: 0 ... 200)
                 .chartXSelection(value: $selectedDay)
             }
@@ -70,5 +82,6 @@ struct SelectedDayBand: ChartContent {
 
 ## Pitfalls
 
+- **Text that promises the band "in both" charts** is wrong for a day only one of them recorded: the other has no bar there and draws none.
 - The bound value is the raw position, not a data point. The band's `unit:` places it on the right day for drawing; snap the value yourself before using it to look anything up (`../interaction.md`).
 - On an iOS 16 target the selection modifier has to be gated. Replace `chartXSelection` with the gated modifier under *Custom gestures* in `../interaction.md`, which falls back to an overlay gesture writing the same binding; the band and everything else here are iOS 16.0.

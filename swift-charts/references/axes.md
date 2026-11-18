@@ -18,16 +18,16 @@ Customise at the shallowest level that does the job: a parameter of `AxisMarks` 
 
 **Use for:** hiding or replacing the x axis. `chartYAxis` is the same for y.
 
-- `chartXAxis(.hidden)` removes the axis: labels, ticks and grid lines.
+- `chartXAxis(.hidden)` removes the axis: labels, ticks and grid lines. On horizontal bars the lines between the rows belong to the y axis and go with it. The argument is a SwiftUI `Visibility`, so a toggle passes `.hidden` or `.automatic` to one modifier rather than adding and removing it.
 - `chartXAxis { AxisMarks(...) }` replaces the default axis with your own.
 
 The closure can hold several `AxisMarks`, and `if`, `if`-`else`, `switch` and `if #available`. Put a condition here, not in a conditional view modifier around the chart, which gives SwiftUI two different charts.
 
 ### `chartXAxisLabel` - iOS 16.0+
 
-**Use for:** a title for the axis, naming what it measures and its unit: `.chartYAxisLabel("Energy density (watts per m²)")`. `chartYAxisLabel` is the same for y. It is separate from the labels on the axis marks.
+**Use for:** a title for the axis, naming what it measures and its unit: `.chartXAxisLabel("Energy density (watts per m²)")`. `chartYAxisLabel` is the same for y. It is separate from the labels on the axis marks.
 
-By default the x title sits below the axis at the leading edge and the y title above the axis at the trailing edge. `position:` and `alignment:` move it, and a closure form takes any view.
+By default the x title sits below the axis at the leading edge and the y title above the axis at the trailing edge. `position:` (an `AnnotationPosition`) and `alignment:` move it, and a closure form takes any view. A y title at `.leading` or `.trailing` turns to run along the plot's side; `alignment:` places a title against the plot area's edges. A title is never wrapped or shortened: a long one runs past the chart's frame at large text sizes, even in a closure with `lineLimit`, so keep titles short or use a shorter one at large sizes.
 
 <!-- snippet: Dashboard/DashboardPatterns.swift#axis-titles -->
 ```swift
@@ -59,7 +59,7 @@ Stating the unit here keeps the labels on the axis marks short (`design.md`, *Ax
 | `stroke:` | The stroke of default grid lines and ticks | `StrokeStyle` |
 | A trailing closure | What is drawn at each value, replacing the defaults | Axis marks, below |
 
-`AxisMarks()` with no arguments recreates the default axis, so start from it and add one parameter at a time. Without a closure, `AxisMarks` draws the default grid line, tick and label at each value. That is enough to change the count, the format or the side:
+`AxisMarks()` with no arguments recreates the default axis, so start from it and add one parameter at a time. A default category axis draws grid lines and labels but no ticks; a number or date axis draws all three. Without a closure, `AxisMarks` draws the default grid line, tick and label at each value. That is enough to change the count, the format or the side:
 
 <!-- snippet: Axes/AxisRecipes.swift#format -->
 ```swift
@@ -93,7 +93,7 @@ The closure can take the `AxisValue` it is drawing, to decide per value what to 
 **Pitfalls:**
 
 - A closure with only `AxisValueLabel` loses the grid lines and ticks. List every part the design shows.
-- The values of an `AxisMarks` are added to the scale's automatic domain. `AxisMarks(values: [0, 50, 100])` on data that peaks at 40 stretches the axis to 100. Usually that is wanted; set the scale's domain when it is not.
+- The values of an `AxisMarks` are added to the scale's automatic domain, whether they are an array, a stride or an automatic count. `AxisMarks(values: [0, 50, 100])` on data that peaks at 40 stretches the axis to 100; on data that peaks at 164, `.stride(by: 25)` ends the axis at 175 and `.stride(by: 50)` at 200. Usually that is wanted; set the scale's domain when it is not.
 
 ### `AxisMarkValues` - iOS 16.0+
 
@@ -135,12 +135,12 @@ struct LeadingValueAxis: View {
 
 | Preset | Labels | Looks like |
 |---|---|---|
-| `.aligned` | Outside the plot area, centred on their grid line | The default number axis |
-| `.extended` | Outside the plot area, beside a grid line that is extended out to them | A leading value axis whose labels should line up with the rest of the interface |
-| `.inset` | Inside the plot area, above their grid line | The default for category names on a y axis, drawn above each row |
+| `.aligned` | Outside the plot area, centred on their grid line | The default number y axis |
+| `.extended` | Outside the plot area, beside a grid line that is extended out to them | The default number and category x axis; a leading value axis whose labels should line up with the rest of the interface |
+| `.inset` | Inside the plot area, above their grid line | The default for category names on a y axis, drawn above each row. On a trailing y axis the names are drawn past the plot's trailing edge, outside the chart's frame; on a category x axis the bars are narrowed to make room and cover the names |
 | `.automatic` | Picks one of the above from the axis and the data | |
 
-Use a preset to move category names out of the plot on a horizontal bar chart, timeline or heat map, where the default `.inset` labels take space from the marks:
+Use a preset to move category names out of the plot on a horizontal bar chart, timeline or heat map, where the default `.inset` labels take space from the marks, and on a dot plot or grid of symbols, where marks at the leading edge cover them:
 
 <!-- snippet: Axes/AxisRecipes.swift#category-rows -->
 ```swift
@@ -170,7 +170,7 @@ The three things drawn at each value, used inside an `AxisMarks` closure. Each t
 
 ### `AxisTick` - iOS 16.0+
 
-**Use for:** the short mark at the edge of the plot. `AxisTick(length: 8)` takes a length in points and `stroke:` as for grid lines. `length:` also accepts `.label` and `.longestLabel`, which run the tick out to the label, each with an `extendPastBy:` form.
+**Use for:** the short mark at the edge of the plot. `AxisTick(length: 8)` takes a length in points and `stroke:` as for grid lines. A longer tick does not move its label, so it runs into the text; on a y axis give the label `horizontalSpacing:` a few points more than the tick's length (12 for an 8-point tick). `length:` also accepts `.label` and `.longestLabel`, which run the tick out to the label, each with an `extendPastBy:` form.
 
 ### `AxisValueLabel` - iOS 16.0+
 
@@ -200,7 +200,7 @@ Parameters that matter:
 
 - `centered:` puts the label in the middle of its band or unit instead of at its start. It defaults to true for categories and false for numbers and dates. Set it to true on a date axis whose marks are plotted with a matching `unit:` and labelled at every unit, so each label sits under its bar. It centres the label between two neighbouring axis marks, not within the unit: with a label every third day the label sits under the middle of the three, so leave it false whenever the stride is longer than the unit.
 - `orientation:` is `.horizontal`, `.vertical` (reading top to bottom) or `.verticalReversed`.
-- `collisionResolution:` decides what happens when labels do not fit: `.truncate` shortens them with an ellipsis, `.greedy` shows only the labels that fit and drops the rest, `.disabled` draws them all even if they overlap. `.greedy(priority:minimumSpacing:)` lets some labels win over others.
+- `collisionResolution:` decides what happens when labels do not fit on the default axis. An `AxisValueLabel` listed in an `AxisMarks` closure does not truncate, even with `.truncate` set: long names overlap, so turn them vertical or use fewer. The options: `.truncate` shortens them (with an ellipsis while there is room for one; on a narrow band only a letter or two is left), `.greedy` keeps the first label and then each next one that clears the last one drawn, `.disabled` draws them all even if they overlap, and the last can run past the plot's trailing edge. Vertical labels take their height from the plot, so the bars lose height to the longest name; they also log a harmless runtime message about `anchor:` values. `.greedy(priority:minimumSpacing:)` lets some labels win over others.
 - `anchor:`, `multiLabelAlignment:`, `horizontalSpacing:` and `verticalSpacing:` adjust placement.
 - A number or date label on a horizontal axis sits after its grid line, so the label of a grid line at the plot's trailing edge has no room: it is left out, or runs past the chart's frame, and the axis ends on an unlabelled line. `AxisMarks(preset: .aligned)` centres each label on its line and so labels both ends; give the scale's range a little padding so the end labels stay inside the chart's frame.
 
@@ -269,7 +269,8 @@ struct StyledAxis: View {
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [2, 4]))
                     .foregroundStyle(.orange)
                 AxisTick(length: 8)
-                AxisValueLabel()
+                // A longer tick does not move the label: space it past the tick.
+                AxisValueLabel(horizontalSpacing: 12)
             }
         }
     }

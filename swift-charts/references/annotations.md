@@ -45,9 +45,9 @@ Examples: `gallery/bar.md`, `gallery/range-bar.md`, `gallery/selection-line.md`.
 
 | Position | Places the view |
 |---|---|
-| `.top`, `.bottom`, `.leading`, `.trailing` | Outside the mark, centred on that edge |
-| `.topLeading`, `.topTrailing`, `.bottomLeading`, `.bottomTrailing` | Outside the mark, diagonally off that corner |
-| `.overlay` | On top of the mark, centred. On a sector that is the middle of its ring: halfway round its angle and halfway between the inner and outer radius |
+| `.top`, `.bottom`, `.leading`, `.trailing` | Outside the mark, centred on that edge. Beside a vertical bar the view has only the gap to the next bar: it is drawn under that bar, and beside the last bar it runs onto the value axis's labels |
+| `.topLeading`, `.topTrailing`, `.bottomLeading`, `.bottomTrailing` | Outside the mark, diagonally off that corner, with the same crowding beside bars |
+| `.overlay` | On top of the mark, centred. The view is offered the mark's width, so text in a narrow bar wraps, a digit to a line at large text sizes: give it `.lineLimit(1)` and a `.minimumScaleFactor`. On a sector that is the middle of its ring: halfway round its angle and halfway between the inner and outer radius |
 | `.automatic` | The default. Above a vertical bar; other marks were not checked, so name a position when it matters |
 
 `alignment:` then moves the view along the chosen side: `position: .top, alignment: .leading` sits above the mark with leading edges lined up. With `.overlay`, the alignment picks the spot inside the mark, which is how a label is put at the end of a bar, inside it:
@@ -145,9 +145,9 @@ Lines that end close together get labels that overlap; nothing moves them apart 
 | Strategy | Result at the edge |
 |---|---|
 | `.automatic` | The default. On the last point of a line it extends the scale as `.padScale` does; name a strategy when the result matters |
-| `.padScale` | Extends the scale past the data until the annotation fits. The marks shrink a little; the annotation stays centred on its mark |
-| `.fit(to: .plot)` | Slides the annotation sideways to stay inside the plot area. The scale is unchanged |
-| `.fit(to: .chart)` | Slides it to stay inside the whole chart, so it may sit over the axis labels |
+| `.padScale` | Extends the scale past the data until the annotation fits. The marks shrink a little; the annotation stays centred on its mark. It cannot extend a domain you set: the annotation then goes past the edge as with `.disabled`. A date axis given `.stride(by:)` counts from the padded start, so weekly labels move off the data's weeks; give the axis an exact array of dates instead |
+| `.fit(to: .plot)` | Slides the annotation inward to stay inside the plot area: sideways on x, down on y, where a label above a point at the top then covers its point. The scale is unchanged |
+| `.fit(to: .chart)` | Slides it to stay inside the whole chart, so it may sit over the axis labels; on y it covers its point as `.fit(to: .plot)` does |
 | `.disabled` | Leaves it where it is. It is cut off at the chart's edge, or drawn outside the chart |
 
 <!-- snippet: Annotations/AnnotationSnippets.swift#overflow -->
@@ -186,5 +186,5 @@ Choosing:
 
 - With overflow disabled, an annotation can draw outside the chart's frame and over neighbouring views. Reserve the space.
 - On an iOS 16 target the `overflowResolution:` form is gated; the plain form has no edge handling.
-- An annotation below a bar that rises from zero (`position: .bottom`) makes room for itself by extending the scale below zero by a whole step, adding an empty negative band and a negative axis label. Put the label above or inside the bar, or fix the scale's domain.
+- An annotation below a bar that rises from zero (`position: .bottom`) makes room for itself by extending the scale below zero by as much as the label needs, rounded to the axis's round numbers: bars of 0 to 164 cups got an axis from -100 to 200, a third of the plot empty, and in a shorter chart -200. The same happens at `.bottomLeading` and `.bottomTrailing`. Put the label above or inside the bar, or fix the scale's domain.
 - An annotation's view is not an accessibility element. Anything written only there is invisible to VoiceOver; the label and value on the mark's `Plot` must carry it (`accessibility.md`).

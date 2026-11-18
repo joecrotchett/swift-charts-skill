@@ -21,7 +21,8 @@ Minimum iOS 17.0 for selection, annotation overflow control and `zIndex`.
 struct SelectionLineChartRecipe: View {
     let stores: [StoreSales]
     @State var rawSelectedDate: Date?
-    @Environment(\.calendar) private var calendar
+    /// The calendar the dates were recorded in: days are cut in it, not in the device's (`data.md`).
+    var calendar = Calendar(identifier: .gregorian)
 
     /// The binding reports the exact position under the finger. Snap it to a day that has data.
     private var selectedDay: Date? {
@@ -54,7 +55,7 @@ struct SelectionLineChartRecipe: View {
                         position: .top, spacing: 0,
                         overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
                     ) {
-                        SelectionPopover(day: selectedDay, stores: stores)
+                        SelectionPopover(day: selectedDay, stores: stores, calendar: calendar)
                     }
             }
         }
@@ -65,11 +66,12 @@ struct SelectionLineChartRecipe: View {
 struct SelectionPopover: View {
     let day: Date
     let stores: [StoreSales]
-    @Environment(\.calendar) private var calendar
+    let calendar: Calendar
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(day, format: .dateTime.weekday(.wide).month().day())
+            // Formatted to a string in the data's time zone: `Text(date, format:)` uses the device's on iOS.
+            Text(day.formatted(Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).weekday(.wide).month().day()))
                 .font(.callout)
                 .foregroundStyle(.secondary)
             HStack(spacing: 20) {
@@ -139,7 +141,7 @@ struct RangeSelectionLineChartRecipe: View {
 
 Both selection modifiers can be applied to the same chart, each with its own binding.
 
-**A range on iOS 16.** Without `chartXSelection(range:)`, convert the drag's start and current locations to values through the `ChartProxy` and draw the range as a `RectangleMark`. The same state can filter a list beneath the chart.
+**A range on iOS 16.** Without `chartXSelection(range:)`, convert the drag's start and current locations to values through the `ChartProxy` and draw the range as a `RectangleMark`. The same state can filter a list beneath the chart. On iOS 17 and later, drive the chart's own range selection from a gesture instead (`selectXRange(from:to:)`, `../interaction.md`). Inside a vertical scroll view this overlay drag takes the page's swipes: see the pitfall in `../interaction.md`.
 
 ![A line chart with a grey band covering one week of it.](../../assets/gallery/selection-brushing.png)
 
@@ -152,17 +154,17 @@ struct BrushingChart: View {
 
     var body: some View {
         Chart {
-            ForEach(days) { day in
-                LineMark(x: .value("Day", day.day, unit: .day), y: .value("Cups", day.cups))
-            }
             if let range {
-                // The selection is a mark, so it stays aligned with the data.
+                // The selection is a mark, so it stays aligned with the data. Declared first, so it is drawn behind the line.
                 RectangleMark(
                     xStart: .value("Selection start", range.lowerBound),
                     xEnd: .value("Selection end", range.upperBound)
                 )
                 .foregroundStyle(.gray.opacity(0.2))
                 .accessibilityHidden(true)
+            }
+            ForEach(days) { day in
+                LineMark(x: .value("Day", day.day, unit: .day), y: .value("Cups", day.cups))
             }
         }
         .chartOverlay { proxy in
@@ -192,5 +194,6 @@ The selection rule, range rules and brush rectangle are hidden from assistive te
 
 - **The selection value is raw.** It is the exact position on the axis, for example 07:14 on a day, not the nearest data point. Snap it before drawing anything from it or looking up values.
 - **Leave room above the chart.** With vertical overflow disabled the label draws outside the chart's frame. Reserve the space, or put the label where a title is and hide the title while a selection is active.
+- **Keep the layout still while the finger moves.** A headline that follows the selection changes length, and if it wraps to fewer lines everything below it moves: on one screen the chart jumped 37 points under the finger. Reserve the height of the longest headline the chart can show, for example with a hidden copy of it behind the visible one.
 - Draw the indicator as a mark inside the chart, not as an overlay, so it stays aligned with the data when the chart resizes.
 - On an iOS 16 deployment target, selection is built with `chartOverlay`, `ChartProxy` and a gesture: see `../availability/README.md`.

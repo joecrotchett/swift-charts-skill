@@ -99,6 +99,8 @@ struct StoreCode: Plottable, Hashable {
 - With a unit, a bar occupies its day or month, and an axis label can be centred under it.
 - Without a unit, the date is a single instant. A bar keeps its default width, a few points, centred on that instant: with a few periods (a week of days, six months) it is a sliver with empty space between, and with many it can look right but is shifted half a period. The first and last bars hang half outside the plot and are drawn over the axis.
 
+A point or a line's point given `unit:` sits at the middle of its period, which suits labels centred on each day; with labels on a longer stride (a week), which sit at midnight, plot the line without a unit so its points fall on the grid lines.
+
 Use the same unit on every mark that shares the axis, including a `RuleMark` used as a selection indicator, so they align.
 
 **A unit is cut in a calendar, and by default it is the device's.** When the dates were recorded in another time zone (daily totals stored as midnight UTC are the usual case), a device west of that zone puts every mark on the previous day, and one east of it can do the reverse. Pass the data's calendar to the value, `.value("Day", date, unit: .day, calendar: dataCalendar)`, and to the axis, which otherwise still places its marks and writes its labels in the device's calendar and time zone. (To keep the default axis untouched instead, move each date to the start of the same day in the device's calendar before charting.) Text written about such a date needs the same care: on iOS, `Text(date, format: style)` formats in the environment's time zone and ignores one set on the style, so a day stored as midnight UTC is written as the day before anywhere west of Greenwich. Format to a string first, `Text(date.formatted(style))`, or set `\.timeZone` in the environment. With the calendar passed to both:
@@ -150,6 +152,7 @@ A chart draws the data it is given; it does not count or sum. To show how values
 | `NumberBins(data: values)` | A count chosen from the data |
 | `NumberBins(data: values, desiredCount: 8)` | About that many, with round boundaries. Asking for 8 can give 10 |
 | `NumberBins(range: 0 ... 100, count: 5)` | Exactly that many equal bins |
+| `NumberBins(range: 0 ... 100, desiredCount: 5)` | About that many over a range you set, with round boundaries |
 | `NumberBins(size: 10, range: 0 ... 100)` | Equal bins of a given width |
 | `NumberBins(thresholds: [0, 18, 35, 65, 120])` | Bins between the boundaries you list; N boundaries make N - 1 bins |
 

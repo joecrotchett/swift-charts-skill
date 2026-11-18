@@ -13,7 +13,7 @@ Minimum iOS 17.0 for everything here.
 - `SectorMark(angle:innerRadius:angularInset:)`. `innerRadius: .ratio(0.618)` makes the hole; leave it out for a pie. `angularInset` is the gap between sectors.
 - `cornerRadius` rounds the sector corners; `foregroundStyle(by:)` colours them and makes the legend.
 - `opacity` on each sector, full for the highlighted one, to focus attention.
-- `chartAngleSelection(value:)` for tapping or dragging over sectors.
+- `chartAngleSelection(value:)` for touching and holding, or dragging, over sectors. The selection ends when the finger lifts (`../interaction.md`).
 - `chartBackground` with `ChartProxy.plotFrame` to centre a SwiftUI view in the hole.
 
 <!-- snippet: Gallery/DonutChart.swift#chart -->
@@ -81,7 +81,7 @@ struct DonutChartRecipe: View {
 
 ## Accessibility
 
-Each sector is its own element, read as its category and value ("Tea, 916"); give it a label and value to add the unit or the share. Text placed in the hole with `chartBackground` is not read, so nothing may be said only there. A pie or donut has no automatic Audio Graph: write a chart descriptor with the sectors as categories (`../accessibility.md`, `../audio-graph.md`).
+Each sector is its own element, read as its category and value ("Tea, 916"); give it a label and value to add the unit or the share. VoiceOver reads the sectors in the order of their place on screen, top to bottom, not clockwise from 12 o'clock: in a five-sector donut ordered largest first, the smallest sector, which ends at 12 o'clock, is read first. Text placed in the hole with `chartBackground` is not read, so nothing may be said only there. A pie or donut has no automatic Audio Graph: write a chart descriptor with the sectors as categories (`../accessibility.md`, `../audio-graph.md`).
 
 ## Pitfalls
 
