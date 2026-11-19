@@ -65,6 +65,9 @@ struct DonutChartRecipe: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }
+                    // Held inside the hole, so a long name wraps instead of running under the ring.
+                    .frame(maxWidth: min(frame.width, frame.height) * 0.618 * 0.85)
+                    .multilineTextAlignment(.center)
                     .position(x: frame.midX, y: frame.midY)
                 }
             }
@@ -81,7 +84,7 @@ struct DonutChartRecipe: View {
 
 ## Accessibility
 
-Each sector is its own element, read as its category and value ("Tea, 916"); give it a label and value to add the unit or the share. VoiceOver reads the sectors in the order of their place on screen, top to bottom, not clockwise from 12 o'clock: in a five-sector donut ordered largest first, the smallest sector, which ends at 12 o'clock, is read first. Text placed in the hole with `chartBackground` is not read, so nothing may be said only there. A pie or donut has no automatic Audio Graph: write a chart descriptor with the sectors as categories (`../accessibility.md`, `../audio-graph.md`).
+Each sector is its own element, read as its category and value ("Tea, 916"); give it a label and value to add the unit or the share. VoiceOver reads the sectors in the order of their place on screen, top to bottom, not clockwise from 12 o'clock: in a five-sector donut ordered largest first, the smallest sector, which ends at 12 o'clock, is read first. Text placed in the hole with `chartBackground` is read on iOS (as one element, "Most sold, Tea, 164 cups"): write it to be heard, or hide it. Its frame keeps it inside the hole, so a long name wraps. A pie or donut has no automatic Audio Graph: write a chart descriptor with the sectors as categories (`../accessibility.md`, `../audio-graph.md`).
 
 ## Pitfalls
 

@@ -19,7 +19,7 @@ Examples: `gallery/donut.md`, `gallery/compact.md`.
 
 ### A legend of your own
 
-When the design's legend cannot be produced by `chartLegend` (a different layout, values beside the names, a legend inside the plot), hide the automatic one and draw it yourself. `chartLegend(position:alignment:spacing:content:)` puts a view of your own in the legend's place instead, when only the content differs and the position is one the legend already offers. From iOS 16.4 the `ChartProxy` gives the scale's values and the colour the chart assigned to each, so the legend cannot drift from the marks:
+When the design's legend cannot be produced by `chartLegend` (a different layout, values beside the names, a legend inside the plot), hide the automatic one and draw it yourself. `chartLegend(position:alignment:spacing:content:)` puts a view of your own in the legend's place instead, when only the content differs and the position is one the legend already offers. Its text draws in blue unless given a colour (`.tint` did not change it, iOS), and VoiceOver reads it. From iOS 16.4 the `ChartProxy` gives the scale's values and the colour the chart assigned to each, so the legend follows the colours. Its order may not: with an automatic colour scale, reordering the data recoloured the marks and the framework's legend, while `foregroundStyleDomain` kept the old order (iOS). With an automatic scale, take only the palette from the proxy and work out the order yourself, or state the domain:
 
 <!-- snippet: Interaction/ProxySnippets.swift#custom-legend -->
 ```swift

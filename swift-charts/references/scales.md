@@ -174,7 +174,7 @@ Example: `gallery/stacked-bar.md`.
 
 ### `chartSymbolScale` - iOS 16.0+
 
-**Use for:** choosing the shape for each encoded value: `.chartSymbolScale(["Harbour": Circle().strokeBorder(lineWidth: 3), ...])`. Shapes are `ChartSymbolShape`s (`mark-configuration.md`), and one literal may mix shapes of different types. `chartSymbolScale(domain:)` fixes which value gets which automatic shape, as for colours.
+**Use for:** choosing the shape for each encoded value: `.chartSymbolScale(["Harbour": Circle().strokeBorder(lineWidth: 3), ...])`. Shapes are `ChartSymbolShape`s (`mark-configuration.md`), and one literal may mix shapes of different types. `chartSymbolScale(domain:)` fixes which value gets which automatic shape, as for colours, and `chartSymbolScale(domain:mapping:)` gives each value its shape from a function.
 
 Example: `gallery/multi-series-line.md`.
 
@@ -206,6 +206,6 @@ struct StableLineStyles: View {
 
 ### `chartSymbolSizeScale` - iOS 16.0+
 
-**Use for:** the range of point sizes that `symbolSize(by:)` maps to: `.chartSymbolSizeScale(range: 20 ... 200)`, in square points of area. Set it whenever sizes are encoded; the default range is too large for most charts. Example in `mark-modifiers.md`. A number encoded as size draws a legend of sample sizes beside any other legend; with a `range:` set, its first entry is 0. There is no value that means the default range: to show the default, leave the modifier out.
+**Use for:** the range of point sizes that `symbolSize(by:)` maps to: `.chartSymbolSizeScale(range: 20 ... 200)`, in square points of area. Set it whenever sizes are encoded; the default range is too large for most charts. Example in `mark-modifiers.md`. A number encoded as size draws a legend of sample sizes beside any other legend; whether its first entry is 0 depends on the data, not on the range: on iOS, cups from 1 to 4 gave "1 2 3 4" with or without `range: 10 ... 120`, and minutes a cup from 0.4 to 9 gave "0 2 4 6 8" with the range and "2 4 6 8" without. The size legend has no title, and opacity has no legend at all: say on screen what each encodes. There is no value that means the default range: to show the default, leave the modifier out.
 
 Add a `domain:` as well, `.chartSymbolSizeScale(domain: 0 ... 1500, range: 2 ... 100)`, when the data can be filtered. A fixed domain makes a size mean the same value in every view.

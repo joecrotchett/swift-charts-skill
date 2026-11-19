@@ -30,7 +30,7 @@ Chart(orders) { order in
 
 ## Accessibility
 
-By default each group is one element, read as the average of its bars ("Latte, average 16.7, 3 Sizes"), which is rarely what the chart is for. Wrap each bar in a labelled `Plot` so each is read with its own value (`../accessibility.md`).
+By default each group is one element, read as the total of its bars ("Latte, total 128, 3 Sizes", read on iOS), exactly as a stack would be: nothing says the bars stand side by side, and no bar's own value is heard. Wrap each bar in a labelled `Plot` so each is read with its own value (`../accessibility.md`). As on stacked bars, the cue beside colour is a direct label on each bar (`stacked-bar.md`).
 
 ## Pitfalls
 

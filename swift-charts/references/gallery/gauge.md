@@ -17,18 +17,29 @@ An arc, usually half a circle, partly filled with colour from one end, the rest 
 ```swift
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 struct GaugeRecipe: View {
-    /// From 0 to 1.
+    /// From 0 to 1. Clamped below, so neither range is ever reversed (a reversed range traps).
     let progress: Double
+
+    private var value: Double {
+        progress.isNaN ? 0 : min(max(progress, 0), 1)
+    }
 
     var body: some View {
         Chart {
-            SectorMark(angle: .value("Progress", 0 ..< progress), innerRadius: .ratio(0.7))
-                .foregroundStyle(.blue)
-                .accessibilityLabel("Progress")
-                .accessibilityValue(Text(progress, format: .percent.precision(.fractionLength(0))))
-            SectorMark(angle: .value("Remaining", progress ..< 1), innerRadius: .ratio(0.7))
-                .foregroundStyle(.gray.opacity(0.3))
-                .accessibilityHidden(true)
+            // The value and its track are one element, so the gauge is read at every value, 0% included.
+            Plot {
+                // A sector with an empty range is left out: none at 0%, no track at 100%.
+                if value > 0 {
+                    SectorMark(angle: .value("Progress", 0 ..< value), innerRadius: .ratio(0.7))
+                        .foregroundStyle(.blue)
+                }
+                if value < 1 {
+                    SectorMark(angle: .value("Remaining", value ..< 1), innerRadius: .ratio(0.7))
+                        .foregroundStyle(.gray.opacity(0.3))
+                }
+            }
+            .accessibilityLabel("Progress")
+            .accessibilityValue(Text(value, format: .percent.precision(.fractionLength(0))))
             // Takes the other half of the circle and draws nothing there.
             SectorMark(angle: .value("Unused", 1.0 ..< 2.0))
                 .foregroundStyle(.clear)
@@ -42,7 +53,7 @@ struct GaugeRecipe: View {
 
 ## Accessibility
 
-The recipe hides the track and the clear sector, so only the value is an element; its sector is alone in its element, so the label on it is read. A gauge has no automatic Audio Graph: attach a single-value chart descriptor (`../audio-graph.md`).
+The value and its track share one labelled `Plot`, so the gauge is one element at every value; the recipe's original form labelled the value's sector alone and hid the track, which left no element at 0%. The value is clamped first: a reversed range (`progress ..< 1` with progress above 1) traps, and a sector with an empty range is left out. In right to left the whole gauge mirrors and fills from the trailing side, which reads correctly. A gauge has no automatic Audio Graph: attach a single-value chart descriptor (`../audio-graph.md`).
 
 ## Pitfalls
 

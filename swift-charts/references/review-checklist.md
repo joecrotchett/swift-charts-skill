@@ -6,7 +6,8 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 
 - Every API newer than the deployment target is inside `if #available` or an `@available` type, with a fallback. (`availability/README.md`)
 - The availability check lists every platform the app ships on. (`availability/README.md`)
-- 3D chart API is excluded from tvOS and watchOS builds with `#if os`, not only gated at run time. (`availability/README.md`)
+- 3D chart API is excluded from tvOS and watchOS builds with `#if os` where the target builds for them, not only gated at run time. (`availability/README.md`)
+- A `Chart3D` has elements and a chart descriptor of its own making; it has none by default. (`chart3d.md`)
 - `ChartProxy.plotFrame` and `plotSize` are used on iOS 17+; `plotAreaFrame` and `plotAreaSize` only below it. (`availability/README.md`)
 - `blur` and `shadow` on marks are gated at iOS 16.4, not 16.0. (`mark-modifiers.md`)
 - Camera projection is inside `#if os(iOS) || os(macOS)` and rendering style inside `#if os(visionOS)`. (`chart3d.md`)
@@ -16,7 +17,7 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 - Nothing the framework provides is rebuilt or defeated: no hard-coded light-only colours, fixed label font sizes or hand-formatted numbers. (`composition.md`)
 - `Chart(data)` is used when every element yields its own mark or group of marks; a standalone mark such as a rule goes in `Chart { }`. (`composition.md`)
 - Every chart with more than one line gives each `LineMark` a `series:` or a `by:` encoding. (`composition.md`)
-- Colour that carries meaning uses `foregroundStyle(by:)`, not a fixed colour chosen per element in code, except to emphasise one element or as a second cue for something position already shows (the sign of a diverging bar). Series styled by hand with `series:` have no legend, so each is labelled directly. (`mark-modifiers.md`, `annotations.md`)
+- Colour that carries meaning uses `foregroundStyle(by:)`, not a fixed colour chosen per element in code, except to emphasise one element or as a second cue for something position already shows (the sign of a diverging bar). Series styled by hand with `series:` have no legend, so each is labelled directly. In 3D, where a key is needed, a fixed colour per point from the table the key reads. (`mark-modifiers.md`, `annotations.md`, `chart3d.md`)
 - Shared styling is applied once to the `ForEach` or `Plot`, not repeated on each mark. (`composition.md`)
 - A label about a data value is an `annotation` on a mark, not an overlay with computed positions. (`annotations.md`)
 - A selection popover names an overflow strategy (`.fit(to: .chart)` on x); a label on the last point of a line may keep the default. `overflowResolution:` is gated at iOS 17. With overflow disabled, space is reserved for the annotation. (`annotations.md`)
@@ -37,8 +38,8 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 - `symbol(by:)` encodes a categorical value. (`mark-modifiers.md`)
 - A bare line is a `LineMark`, not an `AreaMark` with a clear fill. (`marks.md`, `gallery/area.md`)
 - A recurring chart element is a `ChartContent` type, not copied between charts, and sets inside itself only the styles a caller must not change. (`composition.md`)
-- A `SurfacePlot` or function plot returns `Double.nan` where the function is undefined. (`chart3d.md`, `vectorized-plots.md`)
-- A region or band is a `RectangleMark` with start and end values, or for one whole unit an x value with `unit:` and `width: .ratio(1)`, declared before the marks it sits behind. (`marks.md`)
+- A `SurfacePlot` or function plot returns `Double.nan` where the formula gives a number the chart must not draw; a single-point guard at a pole does nothing in a function plot. (`chart3d.md`, `vectorized-plots.md`)
+- A rectangular region is a `RectangleMark` with start and end values (a band that follows a curve is an `AreaPlot`, `gallery/scatter.md`), or for one whole unit an x value with `unit:` and `width: .ratio(1)`, declared before the marks it sits behind. (`marks.md`)
 - A 3D rule has one range and two single values; a 3D rectangle two ranges and one single value. (`chart3d.md`)
 
 ## Data and scales
@@ -49,7 +50,7 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 - A plain bar chart has one row per category; several rows silently stack into one bar. (`marks.md`)
 - Distributions and per-period totals are binned with `NumberBins` or `DateBins`, not by hand-rolled rounding. (`data.md`)
 - A bin is plotted as the x value of a `BarMark`, with the bars touching or a hairline apart. (`gallery/histogram.md`)
-- A scale domain narrower than the data is paired with a clipped plot area. (`plot-area.md`)
+- A scale domain narrower than the data is paired with a clipped plot area (which removes the axis titles) or with domains that hold every mark; in 3D, which does not clip, with data filtered to the domains. (`plot-area.md`, `chart3d.md`)
 - A value with a meaningful minimum and maximum (a percentage, a rating) has that fixed range as its scale domain; otherwise the dynamic default stays, unless another item here fixes the domain. (`scales.md`, `design.md`)
 - The value axis of bars that grow from zero includes zero; floating bars (a range, a box), lines and points far from zero do not have to. (`scales.md`, `design.md`)
 - An exact domain is passed directly, not built with `modifyInferredDomain`. (`scales.md`)
@@ -79,9 +80,9 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 
 Judgement first, then the specifics.
 
-- The chart was designed from a stated goal and shows the few things that goal needs, checked against real data including zeros, gaps and outliers. With no data, it shows a placeholder, not a blank space or an empty plot; so does a chart of only zeros whose marks grow from zero (bars, areas, sectors). Points at zero are real marks and are drawn. (`design.md`)
+- The chart was designed from a stated goal and shows the few things that goal needs, checked against real data including zeros, gaps and outliers. With no data, it shows a placeholder, not a blank space or an empty plot; so does a chart of only zeros whose marks grow from zero (bars, areas, sectors). Points at zero are real marks and are drawn, and so is a gauge's track, so 0% is a reading. (`design.md`)
 - The chart has a point, stated in a visible title or headline; data people only need to look up is in a list or table. (`design.md`)
-- The headline is true of the chart as drawn, and is still true when a control changes the chart. It names no mark that draws nothing: a bar of zero has no top and no colour. (`design.md`)
+- The headline is true of the chart as drawn, and is still true when a control changes the chart. It names no mark that draws nothing: a bar of zero has no top and no colour. Every day and figure it names can be found on the chart at phone width: an axis label that is dropped, or a value between grid lines, is marked on the chart or left out; so is a superlative (tallest, busiest) within a few points of its rivals. (`design.md`, `axes.md`)
 - Every other sentence beside the chart (a note, an explanation) is true of the chart as it is now drawn, including when the device's own text size or layout direction, not a control, produced it. (`design.md`)
 - The mark matches what is being communicated: bars for comparison and totals, a line for change, points for relationships. (`design.md`)
 - Axis labels follow a familiar sequence. (`design.md`)
@@ -105,7 +106,7 @@ Judgement first, then the specifics.
 - A heat map sets cell width and height and moves the row labels outside the plot. (`gallery/heat-map.md`)
 - No more than seven series rely on the automatic colours or symbols; both repeat after seven. (`gallery/README.md`)
 - A pie or donut has a small `angularInset` and corner radius, not large ones. (`marks.md`)
-- The unit of every axis is stated once where the reader will see it: in the heading, in an axis title, or in the axis labels' format. There are no more axis labels than the reader needs, and values in the millions have an explicit format; the automatic one is scientific notation. (`design.md`, `axes.md`)
+- The unit of every axis is stated once where the reader will see it: in the heading, in an axis title, or in the axis labels' format. So is what a size or opacity encoding shows: a size legend has no title and opacity has no legend (`scales.md`). There are no more axis labels than the reader needs, and values in the millions have an explicit format; the automatic one is scientific notation. (`design.md`, `axes.md`)
 - Category labels fit: none are truncated to an ellipsis at the smallest supported width. (`axes.md`)
 - Custom axis labels are checked at phone width. (`gallery/custom-axes.md`)
 - `centered:` is true on a date axis label only when there is an axis mark at every unit (labels may still be left out on some); with a longer stride it puts the label mid-stride. (`axes.md`)
@@ -118,28 +119,28 @@ Elements:
 
 - Each accessibility element covers what the chart's purpose calls for: a mark, a portion, or the whole chart. (`accessibility.md`)
 - Labels and values are on a `Plot` around the mark or marks, not on a bare mark that can share its element; a rule across the plot is its own element and is labelled directly, or through a labelled `Plot` around it. (`accessibility.md`)
-- A control that changes element text without changing the data's ids gives the chart a new identity (`.id(state)`), or VoiceOver keeps the old text. (`accessibility.md`)
+- A control that changes element text or the chart descriptor without changing the data's ids gives the chart a new identity built from every such state (`.id(state)`), or VoiceOver and the Audio Graph keep the old ones. (`accessibility.md`)
 - A custom `ChartContent` made of several marks wraps the ones carrying data in one `Plot`; marks that are only decoration (axis lines, a frame) are hidden. (`accessibility.md`)
 - A legend that changes with state is one `chartLegend` chain given a `Visibility`, not a conditional modifier around the chart. (`legend.md`)
 - A view placed from the `ChartProxy` lands on the right mark in right to left, and an overlay that draws from `plotFrame` is clipped. (`plot-area.md`)
-- While a placeholder replaces the chart, a control that would change or announce what is drawn is disabled. (`design.md`)
+- While a placeholder replaces the chart, a control that would change or announce what is drawn is disabled; one that leads back to a chart (a mark that draws these values) stays enabled. (`design.md`)
 - A control shown as a mistake is a mistake in every state of the other controls; where it changes nothing wrong, it is an ordinary control. (`design.md`)
 - Labels give context first, then the value, with units and dates written out, in actual values and not words like "rapidly", naming what a series is and not its colour. (`accessibility.md`)
 - A target or average rule has a label and a value with its unit; a selection indicator is hidden. (`accessibility.md`)
 - Decoration and any layer that repeats another's data (a gauge's track, an area under a line, points over a line) are hidden with `accessibilityHidden`. (`accessibility.md`)
-- Nothing is conveyed only by an annotation's view or a `chartBackground` view. (`accessibility.md`)
+- Nothing is conveyed only by an annotation's view, and text in a `chartBackground` is meant to be read, since on iOS it is. (`accessibility.md`, `accessibility-defaults.md`)
 - The labels in `.value("...", ...)` and on function plots are real words, and a category's or series' label is singular: VoiceOver reads them as axis names and in summaries ("3 Sizes"). (`accessibility-defaults.md`, `vectorized-plots.md`)
 - `accessibilityChildren`, where used, is applied to the plot area in `chartPlotStyle`. (`accessibility.md`)
 - A compact chart inside a button is one element with one description. (`accessibility.md`)
 
 Audio Graph:
 
-- The chart has a chart descriptor with a title, a summary in actual values, units in its value descriptions, written-out dates, and a name for every series; a compact preview that is one element is the exception. (`audio-graph.md`, `accessibility.md`)
-- The descriptor's `isContinuous` is true only for a connected line or area over an ordered x; separate totals, a bar per day included, are false, its value descriptions and summary agree in number ("1 cup") through the inflected form, not a hand-written test, and its value range matches the drawn scale. (`audio-graph.md`)
+- The chart has a chart descriptor with a title, a summary in actual values, units in its value descriptions, written-out dates, and a name for every series; a compact preview that is one element is the exception, and so is a chart shown to demonstrate the default Audio Graph, which says on screen that it has none. (`audio-graph.md`, `accessibility.md`)
+- The descriptor's `isContinuous` is true only for a connected line or area over an ordered x; separate totals, a bar per day included, are false, its value descriptions and summary agree in number ("1 cup") through the inflected form, not a hand-written test, and its value range matches the drawn scale, one explicit domain passed to both. (`audio-graph.md`)
 
 Beyond VoiceOver:
 
-- Axis labels still fit at the accessibility text sizes; their number adapts to `dynamicTypeSize` where they would not. (`accessibility-beyond-voiceover.md`)
+- Axis labels still fit at the accessibility text sizes; their number adapts to `dynamicTypeSize` where they would not. A y axis title does not meet the top label: `position: .top, alignment: .leading`, since `spacing:` does not separate them, and a shorter title at `.accessibility4` and above. (`accessibility-beyond-voiceover.md`, `axes.md`)
 - A change to what the chart draws (its data, scale or kind of mark) is announced, not only animated, and the announcement follows every control that redraws the chart; a restyling control that speaks its own value needs none unless the headline changes with it. (`accessibility-beyond-voiceover.md`)
 - The elements were read, in Accessibility Inspector or with VoiceOver, not assumed. (`accessibility.md`)
 
@@ -148,8 +149,8 @@ Beyond VoiceOver:
 - Plot types are gated at iOS 18.0 with a mark-based fallback where the target is older. (`vectorized-plots.md`)
 - On a plot, key-path modifiers come before plain-value modifiers. (`vectorized-plots.md`)
 - A per-element colour is `foregroundStyle(\.property)`; `foregroundStyle(by:)` is for an encoded value with a legend. (`vectorized-plots.md`)
-- A function plot alone in a chart sets its x scale domain; one that can leave the y domain sets it or clips the plot area. (`vectorized-plots.md`)
+- A function plot alone in a chart sets its x scale domain; one that can leave the y domain sets it and clips the plot area: with the domain set and no clipping, the curve still runs across the screen. (`vectorized-plots.md`)
 - A trend line is limited to the range of the data with `domain:`. (`vectorized-plots.md`)
 - A function plot's closure captures values, not `self`. (`vectorized-plots.md`)
-- A plot's key paths point at stored properties, and the collection is sorted by the property that drives its style. (`vectorized-plots.md`)
+- A chart of many thousands of points draws fewer where it can (binned, aggregated); its colour and size domains are stated, so they stay put when the data changes. Speed is not claimed without a measurement. (`vectorized-plots.md`)
 - Marks are used where elements differ in mark type, modifiers or layering; a plot where a large collection is styled uniformly. (`vectorized-plots.md`)

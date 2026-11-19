@@ -21,14 +21,14 @@ Both per-month marks use the same `x` value and `width: .ratio(0.6)` so the tick
 Chart {
     ForEach(months) { month in
         BarMark(
-            x: .value("Month", month.month, unit: .month),
+            x: .value("Month", month.month, unit: .month, calendar: calendar),
             yStart: .value("Lowest day", month.dailyMin),
             yEnd: .value("Highest day", month.dailyMax),
             width: .ratio(0.6)
         )
         .opacity(0.3)
         RectangleMark(
-            x: .value("Month", month.month, unit: .month),
+            x: .value("Month", month.month, unit: .month, calendar: calendar),
             y: .value("Average day", month.dailyAverage),
             width: .ratio(0.6),
             height: .fixed(2)
@@ -41,18 +41,19 @@ Chart {
             .foregroundStyle(.blue)
             .lineStyle(StrokeStyle(lineWidth: 3))
             .accessibilityLabel("Average")
+            .accessibilityValue(Text("^[\(overallAverage) cup](inflect: true) a day"))
             .annotation(position: .top, alignment: .leading) {
-                Text("Average: \(overallAverage, format: .number)")
+                Text("Average: \(overallAverage.formatted(.number.locale(locale)))")
                     .font(.body.bold())
                     .foregroundStyle(.blue)
             }
     }
 }
 .chartXAxis {
-    AxisMarks(values: .stride(by: .month)) { _ in
+    AxisMarks(values: .stride(by: .month, calendar: calendar)) { _ in
         AxisGridLine()
         AxisTick()
-        AxisValueLabel(format: .dateTime.month(.narrow), centered: true)
+        AxisValueLabel(format: Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month(.narrow), centered: true)
     }
 }
 ```

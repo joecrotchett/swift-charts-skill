@@ -27,7 +27,7 @@ The closure can hold several `AxisMarks`, and `if`, `if`-`else`, `switch` and `i
 
 **Use for:** a title for the axis, naming what it measures and its unit: `.chartXAxisLabel("Energy density (watts per m²)")`. `chartYAxisLabel` is the same for y. It is separate from the labels on the axis marks.
 
-By default the x title sits below the axis at the leading edge and the y title above the axis at the trailing edge. `position:` (an `AnnotationPosition`) and `alignment:` move it, and a closure form takes any view. A y title at `.leading` or `.trailing` turns to run along the plot's side; `alignment:` places a title against the plot area's edges. A title is never wrapped or shortened: a long one runs past the chart's frame at large text sizes, even in a closure with `lineLimit`, so keep titles short or use a shorter one at large sizes.
+By default the x title sits below the axis at the leading edge and the y title above the axis at the trailing edge. `position:` (an `AnnotationPosition`) and `alignment:` move it, and a closure form takes any view. A y title at `.leading` or `.trailing` turns to run along the plot's side; `alignment:` places a title against the plot area's edges. A title is never wrapped or shortened: a long one runs past the chart's frame at large text sizes, even in a closure with `lineLimit`, so keep titles short or use a shorter one at large sizes. There is also `spacing:`. At the largest text sizes the default y title meets the top value label; `spacing: 8` did not separate them on iOS, and `position: .top, alignment: .leading` did up to `.accessibility3`. At `.accessibility4` and `.accessibility5` a 16-character title ("Temperature (°C)") still met the label there: use a shorter title at those sizes ("°C"). A time of day held as a number of hours gets automatic labels at round numbers, not clock times (6 to 18 was labelled 10 and 15): give it explicit values at a clock step (every 3 hours) with labels written as times, or plot it as a `Date`.
 
 <!-- snippet: Dashboard/DashboardPatterns.swift#axis-titles -->
 ```swift
@@ -57,15 +57,15 @@ Stating the unit here keeps the labels on the axis marks short (`design.md`, *Ax
 | `position:` | The edge of the chart the marks sit on | `AxisMarkPosition` |
 | `values:` | The values that get a mark | `AxisMarkValues`, or an array of values |
 | `stroke:` | The stroke of default grid lines and ticks | `StrokeStyle` |
-| A trailing closure | What is drawn at each value, replacing the defaults | Axis marks, below |
+| A trailing closure | What is drawn at each value, replacing the defaults | Axis marks, below. `format:` exists only without one (with both, it does not compile); inside a closure pass `format:` to `AxisValueLabel` |
 
 `AxisMarks()` with no arguments recreates the default axis, so start from it and add one parameter at a time. A default category axis draws grid lines and labels but no ticks; a number or date axis draws all three. Without a closure, `AxisMarks` draws the default grid line, tick and label at each value. That is enough to change the count, the format or the side:
 
 <!-- snippet: Axes/AxisRecipes.swift#format -->
 ```swift
-func percentAxis() -> some View {
+func percentAxis(locale: Locale) -> some View { // the view's locale, read from the environment
     chartYAxis {
-        AxisMarks(format: Decimal.FormatStyle.Percent.percent.scale(1), values: [0, 50, 100])
+        AxisMarks(format: Decimal.FormatStyle.Percent.percent.scale(1).locale(locale), values: [0, 50, 100])
     }
 }
 ```
@@ -101,10 +101,10 @@ The closure can take the `AxisValue` it is drawing, to decide per value what to 
 
 | Value | Marks |
 |---|---|
-| `.automatic(desiredCount: 3)` | About that many values. The framework may use a different number to keep the values round: asking for 4 on a 0 to 100 axis gives 5 |
+| `.automatic(desiredCount: 3)` | About that many values. The framework may use a different number to keep the values round: asking for 4 on a 0 to 100 axis gives 5, and 3 on a 0 to 300 axis gives 4. Neighbouring counts give the same axis: on 0 to 6,000, 4 or 5 gave 4 values, 6 to 9 gave 7 and 10 to 12 gave 13, and with 2 or 3 the top of an exact domain was not marked. When the count or the top matters, pass the values |
 | `.automatic(minimumStride: 5, desiredCount: 4)` | As above, with a minimum stride |
 | `.stride(by: 25)` | Every multiple of a number |
-| `.stride(by: .hour, count: 3)` | Every third hour; any `Calendar.Component` (`.day`, `.month`, ...) |
+| `.stride(by: .hour, count: 3)` | Every third hour; any `Calendar.Component` (`.day`, `.month`, ...). With `unit:` the domain runs to the start of the period after the last, so a stride can label a day the data does not have ("29" on 28 days); pass the exact dates then |
 | `[0, 50, 100]` | Exactly these values. Works for numbers, dates and category strings |
 
 Each also takes `roundLowerBound:` and `roundUpperBound:`.
@@ -200,9 +200,9 @@ Parameters that matter:
 
 - `centered:` puts the label in the middle of its band or unit instead of at its start. It defaults to true for categories and false for numbers and dates. Set it to true on a date axis whose marks are plotted with a matching `unit:` and labelled at every unit, so each label sits under its bar. It centres the label between two neighbouring axis marks, not within the unit: with a label every third day the label sits under the middle of the three, so leave it false whenever the stride is longer than the unit.
 - `orientation:` is `.horizontal`, `.vertical` (reading top to bottom) or `.verticalReversed`.
-- `collisionResolution:` decides what happens when labels do not fit on the default axis. An `AxisValueLabel` listed in an `AxisMarks` closure does not truncate, even with `.truncate` set: long names overlap, so turn them vertical or use fewer. The options: `.truncate` shortens them (with an ellipsis while there is room for one; on a narrow band only a letter or two is left), `.greedy` keeps the first label and then each next one that clears the last one drawn, `.disabled` draws them all even if they overlap, and the last can run past the plot's trailing edge. Vertical labels take their height from the plot, so the bars lose height to the longest name; they also log a harmless runtime message about `anchor:` values. `.greedy(priority:minimumSpacing:)` lets some labels win over others.
+- `collisionResolution:` decides what happens when labels do not fit on the default axis. An `AxisValueLabel` listed in an `AxisMarks` closure did not truncate category names, even with `.truncate` set: long names overlapped, so turn them vertical or use fewer. Date labels did truncate at the accessibility sizes ("Mar 1" to "Ma…", "M…" and "…", and one was dropped). The options: `.truncate` shortens them (with an ellipsis while there is room for one; on a narrow band only a letter or two is left), `.greedy` keeps the first label and then each next one that clears the last one drawn, `.disabled` draws them all even if they overlap, and the last can run past the plot's trailing edge. Vertical labels take their height from the plot, so the bars lose height to the longest name; they also log a harmless runtime message about `anchor:` values. `.greedy(priority:minimumSpacing:)` lets some labels win over others.
 - `anchor:`, `multiLabelAlignment:`, `horizontalSpacing:` and `verticalSpacing:` adjust placement.
-- A number or date label on a horizontal axis sits after its grid line, so the label of a grid line at the plot's trailing edge has no room: it is left out, or runs past the chart's frame, and the axis ends on an unlabelled line. `AxisMarks(preset: .aligned)` centres each label on its line and so labels both ends; give the scale's range a little padding so the end labels stay inside the chart's frame.
+- A number or date label on a horizontal axis sits after its grid line, so a label with less room than its width before the plot's trailing edge is left out, or runs past the chart's frame. It need not be at the edge: weekly labels over 30 days lost "Mar 29" at iPhone width, two days short of the end, and kept it on iPad. Check the last label at phone width, and never name in a headline a day whose label is gone; mark it on the chart instead. `AxisMarks(preset: .aligned)` centres each label on its line and so labels both ends; give the scale's range a little padding so the end labels stay inside the chart's frame (cap a `@ScaledMetric` padding, or it squeezes the plot at the largest sizes). Centred labels reach each other sooner than labels after their lines: at the accessibility sizes, show fewer or shorter ones. A function plot draws into that padding, past its domain, and at the accessibility sizes the centred last x label can meet the trailing y axis's lowest label: there, anchor only the last label so it ends at its line, `AxisValueLabel(anchor: .topTrailing)` (iOS).
 
 For date axes, format with a `Date.FormatStyle`: `.dateTime.month(.narrow)` for month initials, `.dateTime.weekday(.narrow)` for day initials, `.dateTime.month().day()` for "Mar 4".
 

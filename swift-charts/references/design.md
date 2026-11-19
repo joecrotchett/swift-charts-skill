@@ -5,11 +5,11 @@ Deciding whether to chart, what to build, and how it fits the app. Each guidelin
 ## Whether to use a chart
 
 - **Use a chart to highlight something about a dataset.** A chart draws the eye, so it should have a point: a trend, the current state of something that changes, or a comparison across items or across time.
-- **If people only need the values, use a list or table** they can scroll, search and sort. A chart is for conveying information about the data, not for delivering it.
+- **If people only need the values, use a list or table** they can scroll, search and sort. A chart is for conveying information about the data, not for delivering it. A list needs no Charts code: a row per item that is one accessibility element (the date or name as its label, the amount with its unit as its value), and column headings that are buttons, sort, and say their direction as their value.
 - **Charts earn their place** in three common cases: values over time, past or predicted; part of a whole, such as progress toward a goal; and comparison between items or categories.
-- **Start from the goal, and narrow it.** Write the question the chart answers ("how were sales in the last 30 days?"), list what it could show (pattern, range, individual values, the maximum, outliers, comparisons), and choose the few that matter most to the people using it. An effective chart focuses on a few pieces of information.
+- **Start from the goal, and narrow it.** Write the question the chart answers ("how were sales in the last 30 days?"), list what it could show (pattern, range, individual values, the maximum, outliers, comparisons), and choose the few that matter most to the people using it. An effective chart focuses on a few pieces of information. For example, "how did the last 30 days go?" over daily bars: the average (a labelled `RuleMark`), the weekends (at full strength, the rest faded) and the best day (a marked point carrying its date). The bars stay the same; each insight adds one layer, and the headline says each in a sentence.
 - **Look at the data from three distances** for things worth showing: the whole (a total or an average, as a headline or a `RuleMark`), subsets (a period, a category), and single values (the best day, as a highlighted `PointMark` or an annotation).
-- **Design with real data, and for its awkward cases.** A form that looks right on smooth invented data can fail on the real thing. Check days with zero, gaps, outliers and very small values, and the case of no data at all, or only zeros: an empty chart draws nothing, and a chart of zeros whose marks grow from zero (bars, areas, sectors) draws axes with no marks under a headline that is no longer true. Points at zero are still drawn, so a scatter plot of zeros is a chart, not an empty state. Show a placeholder that says why, such as `ContentUnavailableView` (iOS 17.0+), in place of the `Chart` view, and make the headline and the chart descriptor's summary handle the same case. Disable the controls that would change or announce what the chart draws while the placeholder shows.
+- **Design with real data, and for its awkward cases.** A form that looks right on smooth invented data can fail on the real thing. Check days with zero, gaps, outliers and very small values, and the case of no data at all, or only zeros: an empty chart draws nothing, and a chart of zeros whose marks grow from zero (bars, areas, sectors) draws axes with no marks under a headline that is no longer true. Points at zero are still drawn, and so is a line, flat along the baseline, so a scatter plot or line of zeros is a chart, not an empty state. Show a placeholder that says why, such as `ContentUnavailableView` (iOS 17.0+), in place of the `Chart` view, and make the headline and the chart descriptor's summary handle the same case. Disable the controls that would change or announce what the chart draws while the placeholder shows, except one that leads back to a chart, such as a mark that draws these values.
 - **Keep it simple and let people ask for more.** Do not pack in everything available. Offer detail gradually: a period switch, a subset picker, a larger version behind a tap.
 
 ## Marks
@@ -17,7 +17,7 @@ Deciding whether to chart, what to build, and how it fits the app. Each guidelin
 - **Choose the mark by what the chart should communicate,** not by the shape of the data: bars for comparison and for totals per period, a line for change over time, points for individual values and how two properties relate. The full table is *Choosing a mark* in `marks.md`.
 
 - **How bars are arranged changes what they say:** in a row along time, change; stacked, the parts of a total; side by side, a comparison between categories.
-- **Lines overstate what lies between distant points.** With gaps or zero days, the segments joining far-apart values become more prominent than the values. Bars keep each day separate and show zeros without distraction, and when values are totals the amount of bar on screen matches the amount sold.
+- **Lines overstate what lies between distant points.** With gaps or zero days, the segments joining far-apart values become more prominent than the values. A line joins every point it is given, so a date with no record becomes a straight segment, as if the day had happened; to break it there, give each unbroken run its own `series:` value (read on iOS), and keep the run's colour by not encoding it. Bars keep each day separate and show zeros without distraction, and when values are totals the amount of bar on screen matches the amount sold.
 - **Combine marks when it adds clarity.** Points on a line show the trend and the individual readings together: `symbol` on a `LineMark` (`mark-modifiers.md`). A line over a faint filled area gives the trend more weight (`gallery/area.md`).
 - **Add a dimension only when a question needs it.** Splitting bars by a second property answers "and how is each made up?". Leave the second encoding out unless that question is being asked.
 - **Prefer common chart types.** People already know how to read bars and lines. A scatter plot is less familiar and may need a sentence of guidance. A novel form has to be taught, for instance by introducing its parts one at a time, and belongs at the centre of the app, not in a supporting chart.
@@ -27,10 +27,10 @@ Deciding whether to chart, what to build, and how it fits the app. Each guidelin
 ## Axes
 
 - **Defaults first.** The automatic scales, axes and legend suit most charts. Customise when a default misleads or the design calls for something specific.
-- **Fixed or dynamic range, by meaning.** Use a fixed range when the smallest and largest possible values mean something for any data: a battery runs from 0% to 100% whatever today's readings are (`chartYScale(domain: 0 ... 100)`). Use a dynamic range, which is the default, when values vary widely and the marks should fill the plot: the top of a step-count axis follows the largest count in the period shown. See `ScaleDomain` in `scales.md`.
-- **Choose the lower bound from the mark and the use.** Bars should start at zero, because people compare their lengths. Lines and points far from zero should not: a heart-rate chart from zero hides the difference between resting and active readings (`.automatic(includesZero: false)`).
-- **Use familiar sequences for labels.** 0, 5, 10 is read at a glance; 1, 6, 11 follows the same rule and makes people stop and work it out. Check what a custom domain or stride produces (`AxisMarkValues` in `axes.md`).
-- **Fit grid lines and labels to the chart's job.** Too many distract from the data; too few make values hard to estimate. Apple's worked example settles on about four horizontal grid lines for a detail chart, at round steps people count in (multiples of 20; weeks on a 30-day axis). A preview chart needs none. Where people can inspect values by touching the chart, use fewer grid lines and lighter labels so the data stays prominent:
+- **Fixed or dynamic range, by meaning.** Use a fixed range when the smallest and largest possible values mean something for any data: a battery runs from 0% to 100% whatever today's readings are (`chartYScale(domain: 0 ... 100)`). Use a dynamic range, which is the default, when values vary widely and the marks should fill the plot: the top of a step-count axis follows the largest count in the period shown. See `ScaleDomain` in `scales.md`. A chart with a descriptor, or a headline that names the top, cannot read an automatic domain's ends: work the dynamic top out from the data (the largest value rounded up to a round step) and pass it to `chartYScale(domain:)` and the descriptor (`audio-graph.md`). The same holds for `includesZero: false` below.
+- **Choose the lower bound from the mark and the use.** Bars should start at zero, because people compare their lengths. Lines and points far from zero should not: a heart-rate chart from zero hides the difference between resting and active readings (`.automatic(includesZero: false)`). On a chart that switches between bars and a line, keep zero, so the switch changes one thing.
+- **Use familiar sequences for labels.** 0, 5, 10 is read at a glance; 1, 6, 11 follows the same rule and makes people stop and work it out. Thinning labels at large text keeps the baseline and a step people count in: 0, 50 … 250 becomes 0, 100, 250 or 0, 125, 250, never 50, 150, 250. Check what a custom domain or stride produces (`AxisMarkValues` in `axes.md`).
+- **Fit grid lines and labels to the chart's job.** Too many distract from the data; too few make values hard to estimate. Apple's worked example settles on about four horizontal grid lines for a detail chart, at round steps people count in (multiples of 20; weeks on a 30-day axis). A preview chart needs none. Where people can inspect values by touching the chart, use fewer and lighter grid lines so the data stays prominent; keep the labels at `Color.secondary`, since fading them further (60% of secondary measured about 2:1 against white) makes them hard to read:
 
 <!-- snippet: Design/HIGPatterns.swift#quiet-axis -->
 ```swift
@@ -38,7 +38,8 @@ func quietAxes() -> some View {
     chartYAxis {
         AxisMarks(values: .automatic(desiredCount: 3)) { _ in
             AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-            AxisValueLabel().foregroundStyle(Color.secondary.opacity(0.6))
+            // Fade the grid lines, not the labels: secondary text at 60% fell to about 2:1 contrast.
+            AxisValueLabel().foregroundStyle(Color.secondary)
         }
     }
 }
@@ -75,9 +76,11 @@ The pattern Apple's own apps use for a chart with its summary is a caption, a la
 ```swift
 struct SummaryCard: View {
     let days: [DailySales]
+    let calendar: Calendar // the calendar the dates were made in
+    @Environment(\.locale) private var locale
 
     private var average: Int {
-        days.isEmpty ? 0 : days.map(\.cups).reduce(0, +) / days.count
+        days.isEmpty ? 0 : Int((Double(days.map(\.cups).reduce(0, +)) / Double(days.count)).rounded())
     }
 
     var body: some View {
@@ -85,17 +88,19 @@ struct SummaryCard: View {
             Text("AVERAGE")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Text("\(average, format: .number) ")
-                .font(.title.bold())
-                // foregroundColor keeps this a Text, so the two can be joined on iOS 16.
-                + Text("cups").font(.headline).foregroundColor(.secondary)
+            // Two styles in one line: a Text inside a Text (`+` is deprecated from iOS 26).
+            // foregroundColor keeps the unit a Text on iOS 16; from iOS 17 foregroundStyle does too.
+            Text("\(Text(average, format: .number).font(.title.bold())) \(Text("cups").font(.headline).foregroundColor(.secondary))")
             if let first = days.first?.day, let last = days.last?.day {
-                Text(first ..< last, format: .interval.month().day().year())
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                // Formatted to a string in the data's time zone; Text(range, format:) would use the device's.
+                Text((first ..< last).formatted(
+                    Date.IntervalFormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month().day().year()
+                ))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             }
             Chart(days) { day in
-                BarMark(x: .value("Day", day.day, unit: .day), y: .value("Cups", day.cups))
+                BarMark(x: .value("Day", day.day, unit: .day, calendar: calendar), y: .value("Cups", day.cups))
             }
             .padding(.top, 6)
         }
@@ -107,12 +112,12 @@ struct SummaryCard: View {
 
 - **Let people explore, but never hide critical information behind interaction.** The chart at rest has to communicate its message. Selection reveals detail on top of that: dragging an indicator along a line to read the value at a time (`interaction.md`).
 - **Make the whole plot the target.** Individual marks are often too small to hit with a finger or pointer. Let people scrub anywhere across the plot area to move the selection. `chartXSelection` works this way; a custom gesture should too (`interaction.md`).
-- **The title gives way to the selection.** A selection label can occupy the space above the plot where the title and legend sit, with those hidden while a selection is active. The layout does not jump when a selection appears.
+- **The title gives way to the selection.** A selection label can occupy the space above the plot where the title and legend sit, with those hidden while a selection is active. The layout does not jump when a selection appears. One route, read on iOS with the plot's frame identical at rest and selected: put the title, legend and label in `chartLegend(position: .top, alignment: .leading) { ZStack { … } }`, with hidden copies of every label the chart can show, so the space is as tall as the tallest at the current text size. Set the text's colour there (it draws in blue otherwise, and `.tint` does not change it), and give the plot a minimum height (`chartPlotStyle { $0.frame(minHeight:) }`) in a chart that can grow, or the reserve takes its height at the largest sizes.
 - **Make it navigable by keyboard and Switch Control,** and help people notice when a chart changes. Both are covered in `accessibility-beyond-voiceover.md`.
 
 ## Colour
 
-- **Never rely on colour alone** to tell data apart or to carry essential information. Add a second difference: symbol shape for points and lines (`symbol(by:)`), dash pattern for lines (`lineStyle(by:)`), or direct labels. For example, one measure as red circles and the other as black diamonds.
+- **Never rely on colour alone** to tell data apart or to carry essential information. Add a second difference: symbol shape for points and lines (`symbol(by:)`), dash pattern for lines (`lineStyle(by:)`), or direct labels. Bars have no shape or dash, so their second cue is a direct label on each bar or segment (`gallery/stacked-bar.md`). For example, one measure as red circles and the other as black diamonds. Check by rendering the chart with `.grayscale(1)`: the series must still differ. The check is honest only with colours of similar lightness; the first two automatic colours, blue and green, are not (purple and red are).
 
 <!-- snippet: Design/HIGPatterns.swift#two-series-points -->
 ```swift
@@ -138,9 +143,9 @@ struct TwoSeriesPoints: View {
 }
 ```
 
-- **Emphasise one thing.** To draw the eye to one element, keep it at full strength and fade the rest (opacity around 0.3), or grey the supporting marks and colour the one that matters. When an overlay such as an average line is switched on, mute what is underneath so there is one focus at a time.
+- **Emphasise one thing.** To draw the eye to one element, keep it at full strength and fade the rest (opacity around 0.3 of each mark's own, set on each mark: `opacity` on a `Plot` is ignored, read on iOS), or grey the supporting marks and colour the one that matters. When an overlay such as an average line is switched on, mute what is underneath so there is one focus at a time.
 - **Assign meaningful colours explicitly.** Automatic colours are assigned in order and mean nothing. When a category has a colour people already associate with it, set it; a mismatch (the bar for "green" drawn in pink) actively misleads (`scales.md`).
-- **Balance the visual weight of category colours.** A vivid colour beside a dark one makes its series look more important. Even out saturation and brightness unless a hierarchy is intended; when one series should stand out, a heavier colour is the tool.
+- **Balance the visual weight of category colours.** A vivid colour beside a dark one makes its series look more important. Even out saturation and brightness unless a hierarchy is intended; when one series should stand out, a heavier colour is the tool. Measure weight as the grey `.grayscale(1)` gives each colour (measured on iOS: 0.2126R′ + 0.7152G′ + 0.0722B′ on the sRGB values, not WCAG luminance; a pair matched on luminance came out 5 greys apart). Weight depends on the background: a navy heavy on white measured 1.2:1 on the dark panel, so give each appearance its own colours where one fades. Equal greys remove the lightness cue colour-blind readers use: separate the hues too (a teal-leaning green against a brown), and check with a colour-blindness filter.
 - **Choose colours that are easy to name apart** (purple and green, not purple and purple-pink) and that contrast with the background.
 - **Colour meanings are cultural.** Green for gains and red for losses is expected in some countries and reversed in others, so do not hard-code that pairing in an app that ships widely; let it follow the locale or a setting.
 - **Separate neighbouring areas of colour.** Where coloured segments touch, as in a stacked bar, a thin gap between them helps people see each one (`gallery/stacked-bar.md`). For a pie or donut it is `angularInset` (`marks.md`).
@@ -156,7 +161,7 @@ struct TwoSeriesPoints: View {
 | Large | Most of the screen | Deep exploration: overlays, summaries, several controls |
 
 - **Reveal complexity progressively.** Put a small static chart high in the navigation and let people move to fuller versions as their interest grows.
-- **Overview and detail.** A compact chart in a list row opens a detail screen with the same data in a larger chart (around 240 points tall on iPhone) with axes and interaction. The overview pairs a caption, a headline stating the takeaway in words and numbers, and a small chart with axes and legend hidden (`gallery/compact.md`). The headline above a detail chart reflects its current state: the visible range of a scrolling chart, or the selected element.
+- **Overview and detail.** A compact chart in a list row opens a detail screen with the same data in a larger chart (around 240 points tall on iPhone for the whole chart, axes included, growing with the text) with axes and interaction. The overview pairs a caption, a headline stating the takeaway in words and numbers, and a small chart with axes and legend hidden (`gallery/compact.md`). Both charts take one explicit value domain, or their automatic ones differ and the bars change height when the detail opens. The headline above a detail chart reflects its current state: the visible range of a scrolling chart, or the selected element.
 - **Keep continuity between charts of the same data.** The preview and the full version use the same chart type, colours, annotations and wording, so people recognise them as one thing. Someone who taps a chart wants more of what they saw: keep its shape and every number that was visible, and add to it.
 - **Be consistent across charts with a similar purpose.** One type and one style let people carry what they learned from one chart to the next. Differ only to signal a real difference, and make the difference as large as the change:
 
@@ -166,11 +171,13 @@ struct TwoSeriesPoints: View {
 | The kind of data | Also a different colour |
 | The measure and how it is represented | Also a different mark style or orientation |
 
+The rows do not add up: change only what differs. The same data measured another way (a drink's cups, then its share) keeps its colour and changes its mark. Charts of the same measure share one value domain, worked out from all of them, so equal heights mean equal values. A share of a whole keeps 0 to 100% when the point is how big it is; when the point is how it changes, let the line leave zero and say so in the heading.
+
 - **Several aligned charts, one per measure,** as on Apple's Activity screen, show related measures side by side without forcing them onto one scale (`gallery/small-multiples.md`).
 - **Link related charts.** A selection in one chart highlighted in the others lets people follow one period or item across several views (`gallery/linked-charts.md`).
 - **A chart can be the legend.** In a dashboard, a small bar chart of the categories, coloured by the shared scale, tells people what each colour means and gives them something to tap; the other charts then hide their own legends.
 - **Keep category order the same** in every view of the same data.
-- **Keep colours the same** in every chart and every filtered state: fix the colour scale's domain (`scales.md`).
+- **Keep colours the same** in every chart and every filtered state: fix the colour scale's domain (`scales.md`), and give every chart of the same data one shared mapping, so an explicit colour on one chart does not part it from the others.
 
 ## Pitfalls
 

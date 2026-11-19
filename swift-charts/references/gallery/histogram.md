@@ -44,7 +44,7 @@ struct HistogramRecipe: View {
 
 **Totals per period:** `DateBins` in place of `NumberBins`, and a sum in place of a count (`../data.md`).
 
-**With a fitted curve** (iOS 18.0+). A function `LinePlot` over the bars, scaled so its peak meets the tallest bar.
+**With a fitted curve** (iOS 18.0+). A function `LinePlot` over the bars, scaled by the bin width so its area matches theirs: a bar's share is the density times the width (for counts, times the count as well). Do not scale it so its peak meets the tallest bar; that forces an agreement the data may not have. Let the y domain hold the curve's peak too. Over bars, the curve's own element is read in the order of its frame's top, not along x: give VoiceOver full-height stretches per bin that carry both values (`vectorized-plots.md`, *Accessibility*).
 
 ![Translucent histogram bars with a smooth bell curve drawn over them.](../../assets/gallery/histogram-curve.png)
 
@@ -63,16 +63,17 @@ struct HistogramWithCurve: View {
         }
         let mean = values.reduce(0, +) / Double(values.count)
         let deviation = sqrt(values.map { pow($0 - mean, 2) }.reduce(0, +) / Double(values.count))
-        // Scale the curve so its peak matches the tallest bar.
-        let peak = shares.map(\.share).max() ?? 0
+        // A bar's share is the curve's density times the bin's width, so scale the curve by
+        // the width: then its area matches the bars', whatever the tallest bar happens to be.
+        let width = bins.indices.first.map { bins[$0].upperBound - bins[$0].lowerBound } ?? 1
 
         Chart {
             ForEach(shares, id: \.range.lowerBound) { bin in
                 BarMark(x: .value("Acidity", bin.range), y: .value("Share", bin.share), width: .inset(1))
                     .opacity(0.5)
             }
-            LinePlot(x: "Acidity", y: "Normal curve") { [mean, deviation, peak] x in
-                peak * exp(-pow((x - mean) / deviation, 2) / 2)
+            LinePlot(x: "Acidity", y: "Normal curve") { [mean, deviation, width] x in
+                width * exp(-pow((x - mean) / deviation, 2) / 2) / (deviation * (2 * .pi).squareRoot())
             }
             .foregroundStyle(Color.primary)
         }

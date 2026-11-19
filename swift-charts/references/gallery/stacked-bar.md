@@ -50,7 +50,7 @@ struct SingleStackedBar: View {
 }
 ```
 
-**Separated segments.** A strip of empty space between segments helps people see each one, as in the iPhone Storage bar. Clip each mark to a slightly inset rectangle.
+**Separated segments.** A strip of empty space between segments helps people see each one, as in the iPhone Storage bar. Clip each mark to a slightly inset rectangle. The inset comes off every side: neighbours are twice the inset apart (1.5 leaves 3 points), and the whole bar is that much shorter and narrower.
 
 ![One horizontal bar of five coloured segments with thin white gaps between them, and a legend.](../../assets/gallery/stacked-bar-separated.png)
 
@@ -92,7 +92,9 @@ struct DivergingStackedBars: View {
 
 ## Accessibility
 
-By default each bar is one element, read as its total and the number of categories ("Latte, total 50, 3 Sizes"). To make each segment an element, wrap the mark in a labelled `Plot`; this chart is the worked example in `../accessibility.md`. A single bar divided into parts has no automatic Audio Graph: give it a chart descriptor (`../audio-graph.md`).
+By default each bar is one element, read as its total and the number of categories ("Latte, total 50, 3 Sizes"). To make each segment an element, wrap the mark in a labelled `Plot`; this chart is the worked example in `../accessibility.md`. A single bar divided into parts has no automatic Audio Graph: give it a chart descriptor (`../audio-graph.md`), its range 0 to the total.
+
+**Colour is not enough on its own.** Bars have no symbol or dash, so the second cue is a direct label on each segment (`annotation(position: .overlay)`, legend hidden). Where a segment is too narrow for its label, say on screen what is given up. On the system palette white labels measured 2.2 to 4.2:1, black 5 to 10:1.
 
 ## Pitfalls
 

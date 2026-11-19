@@ -144,7 +144,10 @@ Recipe: `gallery/scrolling-bar.md`.
 **Pitfalls:**
 
 - The position is the window's leading edge, not its centre.
-- A scrolling chart cannot be captured with `ImageRenderer`; it comes out blank. For an image, draw a second chart without the scrolling modifiers, its x domain fixed to the visible window: from the scroll position to the position plus the visible length.
+- A scrolling chart cannot be captured with `ImageRenderer`: it comes out with its value axis and grid but no marks. For an image, draw a second chart without the scrolling modifiers, its x domain fixed to the visible window: from the scroll position to the position plus the visible length.
+- Its `accessibilityChartDescriptor` is ignored: the Audio Graph gets the framework's default ("Chart", no summary, dates as numbers). Put an `accessibilityRepresentation` on it holding a non-scrolling chart of all the data with the descriptor inside; read on iOS, that descriptor is kept. Every mark is an element either way, scrolled out of view or not, so say whether a headline describes the window or the whole.
+- On screen it drew no x axis title and cut the y title short (iOS 27): put the unit in the heading or caption.
+- Laid out first at another width (a split view collapsing on iPhone), it keeps its offset in points and opens on the wrong window; a full x domain did not help. Rebuild it at its settled width, `.id(width)` with the width read by `onGeometryChange`.
 
 ### `ChartScrollTargetBehavior` - iOS 17.0+
 
@@ -152,7 +155,7 @@ Recipe: `gallery/scrolling-bar.md`.
 
 | Parameter | Sets |
 |---|---|
-| `matching: DateComponents(hour: 0)` | Date axis: rest only where the date matches the components, here midnight, so whole days |
+| `matching: DateComponents(hour: 0)` | Date axis: rest only where the date matches the components, here midnight, so whole days. Name the data's calendar and time zone in the components |
 | `unit: 10` | Number axis: rest on multiples of the unit |
 | `majorAlignment:` | Where a swipe, as opposed to a slow drag, lands: `.page` (one visible window on), `.matching(DateComponents(day: 1))` (the next first of the month) or `.unit(100)` |
 | `limitBehavior:` | Whether one gesture is limited in how far it can travel: `.automatic` (limited when the chart is compact along the scrolling axis), `.always`, `.never` |

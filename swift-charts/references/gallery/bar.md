@@ -65,21 +65,22 @@ Chart(sales) { item in
 struct BarsWithLabelledTarget: View {
     let days: [DailySales]
     let target: Int
+    let calendar: Calendar // the calendar the dates were made in
 
     var body: some View {
         Chart {
             ForEach(days) { day in
                 Plot {
-                    BarMark(x: .value("Day", day.day, unit: .day), y: .value("Cups", day.cups))
+                    BarMark(x: .value("Day", day.day, unit: .day, calendar: calendar), y: .value("Cups", day.cups))
                 }
-                .accessibilityLabel(day.day.formatted(.dateTime.weekday(.wide).month(.wide).day()))
-                .accessibilityValue("\(day.cups) cups")
+                .accessibilityLabel(day.day.formatted(Date.FormatStyle(timeZone: calendar.timeZone).weekday(.wide).month(.wide).day()))
+                .accessibilityValue(Text("^[\(day.cups) cup](inflect: true)"))
             }
             // A rule across the plot is an element of its own, so it is labelled directly.
             RuleMark(y: .value("Target", target))
                 .foregroundStyle(.red)
                 .accessibilityLabel("Target")
-                .accessibilityValue("\(target) cups")
+                .accessibilityValue(Text("^[\(target) cup](inflect: true)"))
                 // The visible label; annotation views are not read, so the rule carries the words too.
                 .annotation(position: .top, alignment: .leading) {
                     Text("Target: \(target, format: .number)").font(.caption).foregroundStyle(.red)

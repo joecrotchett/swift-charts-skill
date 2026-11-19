@@ -6,7 +6,7 @@ What a chart owes people who navigate without touch, who do not tell colours apa
 
 Keyboard commands, Full Keyboard Access and Switch Control visit elements one after another. In an interactive chart, make that path logical:
 
-- Give the elements a predictable order, such as along the x axis, instead of one that jumps back and forth. On iOS the elements come in order of their place on screen, not the data's: a scatter plot's points roughly top to bottom, a donut's sectors by position (both read on the iOS simulator). Bars and lines along a category or date axis come out along x, which is usually the order wanted. Sorting the data does not change this; say the order truthfully rather than promising one.
+- Give the elements a predictable order, such as along the x axis, instead of one that jumps back and forth. On iOS the elements come in order of their place on screen, not the data's: a scatter plot's points roughly top to bottom, a donut's sectors by position (both read on the iOS simulator). Bars and lines along a category or date axis come out along x, which is usually the order wanted, and the labelled segments of stacked bars bar by bar, each from the bottom segment up. Points do not: one `PointMark` per day in labelled `Plot`s came out tallest first. Points, and portions in labelled `Plot`s, come out by the tops of their frames unless each `Plot` holds a clear full-height band, which puts them along x (`accessibility.md`, *One element per `Plot`*). Labelled rules and bands come after all the data marks. Sorting the data does not change this; say the order truthfully rather than promising one.
 - For a very large dataset, let focus move between subsets of values, not through every point.
 
 Both also improve VoiceOver, including on charts that are not interactive.
@@ -18,7 +18,7 @@ Make the whole plot the target for touch too (`design.md`, *Interaction*).
 ## Colour, contrast and differentiation
 
 - Do not rely on colour alone: put colour on top of another difference (symbol shape, dash pattern, direct labels), so the chart still works with Differentiate Without Colour turned on (`design.md`, *Colour*; `gallery/scatter.md`).
-- Choose colours that contrast with each other and with the background, check them with colour-blindness filters, and make sure they adapt to Dark Mode and Increase Contrast.
+- Choose colours that contrast with each other and with the background, check them with colour-blindness filters and with `.grayscale(1)` (`design.md`, *Colour*), and make sure they adapt to Dark Mode and Increase Contrast.
 - Separate neighbouring areas of colour: a gap between stacked segments (`gallery/stacked-bar.md`), a small `angularInset` between sectors (`marks.md`).
 
 ## Changes and motion
@@ -44,9 +44,9 @@ A chart whose data changes many times a second, such as a live level meter, take
 
 ## Dynamic Type and layout
 
-The framework's own axis labels and legend follow Dynamic Type without any code (`composition.md`). The number of labels does not: at the accessibility sizes, labels that fitted can collide or be cut short. On a horizontal bar chart the category names sit inside the plot, above each row, and take their height from the bars: in a fixed-height chart the bars shrink to strips at the largest sizes. Let the chart's height grow with the text (`@ScaledMetric`), or move the names outside the plot (`axes.md`, `AxisMarkPreset`).
+The framework's own axis labels and legend follow Dynamic Type without any code (`composition.md`), but the legend does not keep its names whole: it wraps from XXX Large up, yet still clipped "Mocha" at `.accessibility3` and dropped a name, leaving its swatch alone, at `.accessibility5`, and in a fixed-height chart its extra lines come out of the plot. At those sizes give it your own legend that wraps (`legend.md`, *A legend of your own*). The number of labels does not: at the accessibility sizes, labels that fitted can collide or be cut short. On a horizontal bar chart the category names sit inside the plot, above each row, and take their height from the bars: in a fixed-height chart the bars shrink to strips at the largest sizes. Let the chart's height grow with the text (`@ScaledMetric`), or move the names outside the plot (`axes.md`, `AxisMarkPreset`).
 
-For the labels along an axis, read `dynamicTypeSize` from the environment and ask for fewer. An exact array of values is always drawn in full, so thin the array itself. At the largest sizes fewer may still not be enough for a date label such as "Mar 1" on a phone: shorten the format as well (the day alone). A label at the plot's trailing edge needs the room `axes.md` describes:
+For the labels along an axis, read `dynamicTypeSize` from the environment and ask for fewer. `desiredCount` is only a wish (3 on a 0 to 300 axis still gave four labels); an exact array of values is always drawn in full, so thin the array itself. At the largest sizes fewer may still not be enough for a date label such as "Mar 1" on a phone: shorten the format as well (the day alone). A label at the plot's trailing edge needs the room `axes.md` describes:
 
 <!-- snippet: Community/CommunityPatterns.swift#dynamic-type-axis -->
 ```swift
@@ -77,4 +77,4 @@ struct DynamicTypeAwareAxis: View {
 }
 ```
 
-Test custom label views and annotations at the largest sizes too.
+The value axis's top label is centred on the top of the domain, so in a chart inside a `ScrollView` it is cut in half; give the scale room above it that grows with the text (`chartYScale(domain:range: .plotDimension(endPadding:))` with a `@ScaledMetric` amount, capped, or it squeezes the plot at the largest sizes). `@ScaledMetric` follows a `dynamicTypeSize` set on the view, not only the device's. A screen that lets people try text sizes on a chart starts from the device's own size and forces nothing until asked. Test custom label views and annotations at the largest sizes too: a value written above a bar can crowd the value axis's labels, and `overflowResolution: .init(x: .fit(to: .plot))` keeps it inside the plot (read at `.accessibility5`). On x that slides a label at a bar's end back over the bar; to keep it clear, give the scale room that grows with the text, `range: .plotDimension(endPadding:)` with a capped `@ScaledMetric`.

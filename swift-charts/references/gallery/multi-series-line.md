@@ -111,7 +111,7 @@ What each modifier in the styled version does:
 
 ## Accessibility
 
-By default each date is one element giving the span across the series ("150 to 145, 2 Stores"), and more than a few dates are merged into ranges. Wrap each point's mark in a `Plot` labelled with the store and the written-out date, or describe a stretch per plot on a long series. The target rule is its own element and is labelled directly, as the recipe does. Name each series in the chart descriptor (`../accessibility.md`, `../audio-graph.md`).
+By default each date is one element giving the first series' value to the last's ("150 to 145, 2 Stores"; "2 series" if the stores also set the symbol), and more than a few dates are merged into ranges. Wrap each point's mark in a `Plot` labelled with the store and the written-out date, or describe a stretch per plot on a long series. The target rule is its own element and is labelled directly, as the recipe does. Name each series in the chart descriptor (`../accessibility.md`, `../audio-graph.md`).
 
 ## Pitfalls
 

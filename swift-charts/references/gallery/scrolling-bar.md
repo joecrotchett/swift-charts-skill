@@ -67,5 +67,5 @@ struct ScrollingBarChartRecipe: View {
 
 - The scroll position is the leading edge of the window, not its centre.
 - When a control switches the chart between different data sets (30 days of daily bars, 12 months of monthly bars), disable the animation for that change; the bars are different things and should not morph into each other.
-- A scrollable chart cannot be captured with `ImageRenderer`: it comes out blank. To export an image, render a non-scrolling version of the chart.
+- A scrollable chart cannot be captured with `ImageRenderer`: it comes out with no bars. To export an image, render a non-scrolling version of the chart. Its own chart descriptor is ignored too; `../interaction.md` (*Scrolling*) gives the route that works.
 - On an iOS 16 deployment target there is no framework scrolling: see `../availability/README.md`.

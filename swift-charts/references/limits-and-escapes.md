@@ -27,8 +27,9 @@ Designs that need SwiftUI beside or around the chart, or cannot be done.
 | Custom legend layout in the chart's own colours | Escape hatch | iOS 16.4 | Hide the legend; build one from `ChartProxy.foregroundStyle(for:)` | `legend.md` |
 | Small multiples (a grid or stack of aligned charts) | Escape hatch | iOS 16.0 | No faceting in the framework: one `Chart` per group in SwiftUI layout, with a shared scale domain | `gallery/small-multiples.md` |
 | 3D bars, lines, areas or pies | Not feasible | | `Chart3D` accepts only points, rules, rectangles and surfaces. Nearest: a 2D grouped bar chart or heat map when the third dimension is a category, a 3D scatter when all three are numbers | `chart3d.md` |
-| Image export of a 3D chart | Not feasible | | `ImageRenderer` draws a placeholder for `Chart3D`; export a 2D chart of the same data | `chart3d.md` |
-| Image export of a scrolling chart | Escape hatch | iOS 17.0 | `ImageRenderer` draws a scrollable chart blank: render a second chart without the scrolling modifiers, its x domain fixed to the visible window | `interaction.md` |
+| Image export of a 3D chart | Escape hatch | iOS 26.0 | `ImageRenderer` draws a placeholder for `Chart3D`; draw a hosted window with `drawHierarchy`, which captures it in full (iOS): a `UIHostingController` (`safeAreaRegions = []`) in a `UIWindow(windowScene:)` of the presenting view's scene (a bare `UIWindow(frame:)` draws blank), shown and left to draw, then `drawHierarchy(in:afterScreenUpdates: true)` in a `UIGraphicsImageRenderer`; or export a 2D chart of the same data | `chart3d.md` |
+| Image export of a chart | Native | iOS 16.0 | `ImageRenderer(content:)` with `scale` set to the display scale and an explicit frame and background. It renders without the presenter's environment, the locale included (iOS): set `\.locale` and the colour scheme on the content | `limits-and-escapes.md` |
+| Image export of a scrolling chart | Escape hatch | iOS 17.0 | `ImageRenderer` draws a scrollable chart with no marks: render a second chart without the scrolling modifiers, its x domain fixed to the visible window | `interaction.md` |
 
 ### Marks and styling
 
@@ -129,7 +130,7 @@ The techniques the table relies on, and where each is written up:
 
 | Technique | Use for | Cost | Detail |
 |---|---|---|---|
-| A SwiftUI view positioned with `ChartProxy` in `chartOverlay` or `chartBackground` | Centre text, badges, a custom legend, anything pinned to a value | Its position is yours to keep right. Views in an overlay are accessibility elements and need labels; views in a background are not read at all | `plot-area.md` |
+| A SwiftUI view positioned with `ChartProxy` in `chartOverlay` or `chartBackground` | Centre text, badges, a custom legend, anything pinned to a value | Its position is yours to keep right. Views in an overlay are accessibility elements and need labels; on iOS views in a background are read too, so hide decoration there | `plot-area.md` |
 | A gesture in `chartOverlay` | Selection on iOS 16 | Two code paths to keep behaving alike | `interaction.md` |
 | A horizontal `ScrollView` around a wide chart | Scrolling on iOS 16 | The value axis scrolls away; no snapping | `interaction.md` |
 | `rotationEffect` and a clear sector | Gauges and partial rings | Everything in the chart rotates; half the frame is empty | `gallery/gauge.md` |

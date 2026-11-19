@@ -47,4 +47,5 @@ A compact chart that opens a fuller one is a single element with a succinct labe
 ## Pitfalls
 
 - Hiding the axes removes the only place values were readable. Always pair the chart with text that states the figure.
-- The compact chart and its detail chart should plot the same data the same way, so the detail reads as a closer look at the same thing.
+- The compact chart and its detail chart should plot the same data the same way, including one explicit value domain, so the detail reads as a closer look at the same thing.
+- A total is the least a headline can say. Where the data has a message (each week beat the last), say it beside the figure: that is the takeaway `../design.md` asks for.

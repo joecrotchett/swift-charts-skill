@@ -149,7 +149,7 @@ A label at the very end of the scale can be cut off at the chart's edge; leave r
 
 **Quiet axes for an interactive chart:** three values, pale grid lines and labels, so the data stays prominent. Code under *Axes* in `../design.md`.
 
-![A line over a fading fill with only 0, 250 and 500 marked, in very light grey.](../../assets/gallery/axis-quiet.png)
+![A line over a fading fill with only 0, 250 and 500 marked, light grid lines and grey labels.](../../assets/gallery/axis-quiet.png)
 
 **One letter per day, centred under each bar:**
 

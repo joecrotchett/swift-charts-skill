@@ -18,7 +18,7 @@ A mark draws one data element, so a chart of marks is a `ForEach` that creates o
 
 Each plot's initializers mirror its mark's (`marks.md`), with the collection as the first argument and key paths in place of values.
 
-**Use a plot** for a larger data set whose points are all styled the same way, from the same properties, and to draw a function. A plot treats the collection as one thing and can process it in parallel.
+**Use a plot** for a larger data set whose points are all styled the same way, from the same properties, and to draw a function. A plot treats the collection as one thing and can process it in parallel. Do not promise a reader that it draws faster: in a single render on the iOS simulator (`ImageRenderer`, 1,000 to 20,000 points) a `PointPlot` and a `ForEach` of the same `PointMark`s took the same time, within 2%. Choose a plot for its shape, and measure before claiming speed.
 
 **Use marks** when there are fewer points and they need individual treatment: different mark types or modifiers per element, or layering between elements with `zIndex`. Marks are also the only choice on an iOS 17 or earlier target.
 
@@ -74,7 +74,7 @@ The protocol every collection plot conforms to, and where the key-path modifiers
 | `opacity(_:)` | A key path to a `CGFloat` from 0 to 1 |
 | `lineStyle(_:)` | A key path to a `StrokeStyle` |
 | `symbolSize(_:)` | A key path to a `CGFloat` area in square points, or to a `CGSize` |
-| `accessibilityLabel(_:)`, `accessibilityValue(_:)`, `accessibilityHidden(_:)`, `accessibilityIdentifier(_:)` | A key path to the text, `Bool` or `String`. The label and value are not read by VoiceOver, on a few points or many: a plot's elements keep their automatic wording, so describe a plot through its chart descriptor (`audio-graph.md`) |
+| `accessibilityLabel(_:)`, `accessibilityValue(_:)`, `accessibilityHidden(_:)`, `accessibilityIdentifier(_:)` | A key path to the text, `Bool` or `String`. The label and value are not read by VoiceOver, on a few points or many (iOS): a plot's elements keep their automatic wording. Give VoiceOver words through a representation (*Accessibility*, below) and the Audio Graph through a chart descriptor (`audio-graph.md`) |
 
 A plot is also `ChartContent`, so every modifier in `mark-modifiers.md` works on it with a plain value, applied to the whole plot: `cornerRadius(4)`, `opacity(0.7)`, `interpolationMethod(.catmullRom)`.
 
@@ -82,7 +82,8 @@ A plot is also `ChartContent`, so every modifier in `mark-modifiers.md` works on
 
 **Pitfalls:**
 
-- A key-path modifier after a plain-value one does not compile, and the error does not say why: "instance method 'foregroundStyle(by:)' requires that 'KeyPath<Root, Value>' conform to 'Plottable'". Move the key-path modifier up.
+- A key-path modifier after a plain-value one does not compile, and no error says why. What it says depends on the plain-value modifier (Xcode 27.0). After one with no key-path form, such as `symbol(.square)`, there are two errors on the key-path modifier's line: "instance method 'foregroundStyle(by:)' requires that 'KeyPath<Root, Value>' conform to 'Plottable'" and "cannot infer key path type from context; consider explicitly specifying a root type", whose suggestion does not help. After one that also has a key-path form (`opacity`, `symbolSize`, `lineStyle`, `foregroundStyle(_:)`), the compiler picks that form and the error lands on the plain-value line instead, reading as though that modifier wanted a key path: "cannot convert value of type 'Double' to expected argument type 'KeyPath<…, CGFloat>'" for `opacity(0.6)`, "no exact matches in call to instance method 'symbolSize'" for `symbolSize(40)`; with several, each line gets its own. In a longer expression the build may instead give up: "the compiler is unable to type-check this expression in reasonable time". Either way, move the key-path modifiers up.
+- A stored key path works as well as a literal (`.value("Colour", choice.keyPath)`), so a control can switch what a modifier reads. All the choices for one modifier must share a value type.
 - A colour stored on each element is `foregroundStyle(\.colour)`, with no `by:`. `foregroundStyle(by:)` takes a `.value(...)` and makes a scale and a legend.
 - `symbolSize(by:)` needs `chartSymbolSizeScale(range:)`, as with marks (`mark-modifiers.md`).
 
@@ -114,6 +115,8 @@ struct ShiftRectanglePlot: View {
 }
 ```
 
+VoiceOver does not read an interval's start and end: on a date axis each rectangle's element is the one-hour stretch around its middle, then the category ("8:00 AM to 9:00 AM Tom" for a shift from 11:00 to 18:00), and, for a plain date, in the device's time zone (`accessibility-defaults.md`). With a few intervals, give each a labelled mark in a representation (*Accessibility*, below) in place of stretches.
+
 `BarPlot` stacks, and takes `stacking:`, exactly as `BarMark` does:
 
 <!-- snippet: Plots/VectorizedPlots.swift#bars -->
@@ -130,6 +133,40 @@ struct OrdersBarPlot: View {
                 y: .value("Cups", \.cups)
             )
             .foregroundStyle(by: .value("Size", \.size))
+        }
+    }
+}
+```
+
+### Accessibility
+
+A plot's elements are the automatic ones, merged into stretches of the axis with bare numbers and no units, and plain dates in the device's time zone (`accessibility-defaults.md`). Its key-path `accessibilityLabel` and `accessibilityValue` are not read. To give VoiceOver units and the right times, put a representation on the chart: one labelled stretch of the axis per element, each spanning the plot's full height so they are read along x (`accessibility.md`, *One element per `Plot`*). Read on iOS; the chart descriptor on the representation reaches the Audio Graph. A function plot alone is simpler: a labelled `Plot` around a function `LinePlot` is one element with that label and value (iOS). Beside other elements it is read in the order of its frame's top (a curve over a histogram came between the first two bars), so a curve over data goes into the stretches' values instead.
+
+<!-- snippet: Plots/VectorizedPlots.swift#spoken-portions -->
+```swift
+@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+struct BeanPointPlotWithSpokenPortions: View {
+    let beans: [Bean]
+    /// Stretches of the acidity axis, one element each.
+    let portions: [(start: Double, end: Double, count: Int)]
+
+    var body: some View {
+        Chart {
+            PointPlot(beans, x: .value("Acidity", \.acidity), y: .value("Body", \.body))
+        }
+        .chartYScale(domain: 0 ... 10)
+        .accessibilityRepresentation {
+            Chart(portions, id: \.start) { portion in
+                // Full height, so every element shares one top edge and is read along x.
+                Plot {
+                    RectangleMark(xStart: .value("Acidity", portion.start), xEnd: .value("Acidity", portion.end),
+                                  yStart: .value("Body", 0), yEnd: .value("Body", 10))
+                }
+                .accessibilityLabel("Acidity \(portion.start.formatted()) to \(portion.end.formatted())")
+                .accessibilityValue("\(portion.count) beans")
+            }
+            .chartYScale(domain: 0 ... 10)
+            // The chart descriptor goes here, on the representation.
         }
     }
 }
@@ -160,14 +197,18 @@ struct DailySalesLine: View {
 
 ## Keeping a large plot fast
 
-- **Key paths to stored properties.** A stored property is read at a constant memory offset; a computed one runs its getter for every point. Compute derived values (a projected coordinate, a ratio) once in the element's initializer and store them. Keep any other computation out of rendering too.
-- **Group the collection by style.** When colour comes from a category, order the data by that category, so the style alternates as few times as possible along the collection.
-- **State what is already known.** If the distinct styles are few and known, or the overall bounds of the chart are, set the scale domains explicitly: a range such as `0 ... 500` or the list of categories, not `.automatic`, which still has the framework work the domain out.
+What costs time is the number of points. In single renders on the iOS simulator (`ImageRenderer`, a `PointPlot` coloured by category), 5,000 points took about 52 ms and 20,000 about 178 ms; none of the following changed that measurably, alone or all together (178 ms with all of them, 182 ms with none, inside the 5 to 13 ms spread between runs). Apple gives them as ways to keep a plot fast, and they may matter where a single render does not show it (live updates, scrolling, a device), so measure your own chart before promising a reader speed:
+
+- **Key paths to stored properties**, not computed ones: a computed property runs its getter for every point.
+- **The collection grouped by style**, so the colour changes as few times as possible along it.
+- **Scale domains stated** where they are known, not `.automatic`.
+
+Stating the domains also changes the picture, which is the better reason for it: an automatic y domain ended at 8 where the stated one ended at 10, and automatic colours went to the categories in the order they first appear in the data, so sorting the data reassigned them. Sorting also decides what is on top: sorted by drink, the last drink covered the others wherever points overlapped. State the domains for a stable axis and stable colours, and **fix the colour and size scale domains** when a selection filters the data, so nothing changes colour or size as the subset changes (`scales.md`).
+
 - **Small symbols** for a dense scatter: `symbolSize(4)`.
 - **Animate by changing what a key path points at.** Switching the property plotted on x inside `withAnimation`, or through a binding with `.animation(...)`, moves every point of a `PointPlot` to its new place.
-- **Fix the colour and size scale domains** when a selection filters the data, so nothing changes colour or size as the subset changes (`scales.md`).
 
-**Below iOS 18 there are no plots,** and nothing makes a very large number of individual marks fast. Draw fewer marks: bin or aggregate the data first (`data.md`). A dense scatter becomes a two-dimensional histogram, one rectangle per cell coloured by count (`gallery/heat-map.md`), which shows the same density with a few hundred marks. Since that is a different chart form, gate the whole chart, not a mark inside it (`availability/README.md`, *Gate a whole chart*).
+**What does cost less is fewer points,** on any release. Bin or aggregate the data first (`data.md`). A dense scatter becomes a two-dimensional histogram, one rectangle per cell coloured by count (`gallery/heat-map.md`), which shows the same density with a few hundred marks. Below iOS 18 there are no plots; since a heat map is a different chart form, gate the whole chart, not a mark inside it (`availability/README.md`, *Gate a whole chart*).
 
 ## Plotting functions
 
@@ -212,7 +253,7 @@ struct ScatterWithTrendLine: View {
 
 **Pitfalls:**
 
-- Where the function is undefined, return `Double.nan`; where it is infinite, `Double.infinity`. Guard any input that would trap and return `.nan` for it.
+- Return `Double.nan` where the formula gives a number but the curve must not be drawn: outside the range a model is valid for, or a gap in a piecewise function. `.nan` and `.infinity` both leave a gap. A pole needs nothing: the plot never asks for y at the exact point (on iOS, about 3,000 calls for `1 / x` on -3 to 3, none at 0) and breaks the line there by itself, so a guard such as `x == 0 ? .nan : 1 / x` never runs. A pole where the sign flips is not joined either: `tan x` near π/2 was asked for 15,014 on one side and −3,522 on the other, and no line joined them. `log` and `sqrt` of a negative are already `.nan`, and `Double` division does not trap; guard only what would (integer arithmetic, an array index).
 - A curve that leaves the y scale's domain is drawn outside the plot area, over the axis labels and beyond the chart's frame. Clip the plot area (`plot-area.md`):
 
 <!-- snippet: Plots/FunctionPlots.swift#undefined -->
@@ -221,9 +262,8 @@ struct ScatterWithTrendLine: View {
 struct ReciprocalPlot: View {
     var body: some View {
         Chart {
-            LinePlot(x: "x", y: "1/x") { x in
-                x == 0 ? .nan : 1 / x
-            }
+            // No guard at 0: the plot never asks for y there, and breaks the line at the pole by itself.
+            LinePlot(x: "x", y: "1/x") { x in 1 / x }
         }
         .chartXScale(domain: -3 ... 3)
         .chartYScale(domain: -5 ... 5)
@@ -245,24 +285,7 @@ struct ReciprocalPlot: View {
 - `AreaPlot(x:y:domain:function:)` fills between zero and f(x).
 - `AreaPlot(x:yStart:yEnd:domain:function:)` fills between two functions: the closure returns `(yStart:, yEnd:)`.
 
-<!-- snippet: Plots/FunctionPlots.swift#area -->
-```swift
-@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-struct FunctionAreaPlot: View {
-    var body: some View {
-        Chart {
-            AreaPlot(x: "x", yStart: "x", yEnd: "x² − 1") { x in
-                (yStart: x, yEnd: x * x - 1)
-            }
-            .opacity(0.4)
-        }
-        .chartXScale(domain: -2 ... 2)
-        .chartYScale(domain: -4 ... 4)
-    }
-}
-```
-
-The same pitfalls as `LinePlot` apply. Recipe for both: `gallery/function-plot.md`.
+Code, and the recipe for both: `gallery/function-plot.md`. The same pitfalls as `LinePlot` apply.
 
 ## Pitfalls
 

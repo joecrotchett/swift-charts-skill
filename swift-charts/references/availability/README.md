@@ -110,7 +110,7 @@ extension ChartContent {
 
 ### Gate a whole chart
 
-When the chart only makes sense on the newer OS, mark the type and choose at the call site.
+When the chart only makes sense on the newer OS, mark the type and choose at the call site. State of a newer type (a `Chart3DPose`) lives in the marked type too: held by the view that makes the check, it does not compile.
 
 ```swift
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)

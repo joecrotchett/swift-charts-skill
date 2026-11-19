@@ -63,36 +63,49 @@ struct StripPlot: View {
 
 ![Seven days of readings: blue circles for one store and green crosses for the other, with a legend.](../../assets/gallery/scatter-two-series.png)
 
-**A band of uncertainty around the trend** (iOS 18.0+): a function `AreaPlot` between a low and a high curve, under the line.
+**A band of uncertainty around the trend** (iOS 18.0+): a function `AreaPlot` between a low and a high curve, declared first so the points and the line lie over it, and limited to the data's range with `domain:`. Say which band it is. The one below is the 95% prediction band of a least-squares line, worked out in the model: where new points should fall, narrowest at the mean of x. For a few points use Student's t, not 1.96 (2.10 for 20 points), or the band is too narrow. A constant margin draws two parallel lines, which is neither band.
 
 ![Points with a line through them and a pale band either side of the line.](../../assets/gallery/scatter-trend-band.png)
 
 <!-- snippet: Dashboard/DashboardPlots.swift#band -->
 ```swift
-/// A trend line with a band of uncertainty around it.
+/// A least-squares line, worked out in the model, and its 95% prediction band: where about
+/// 95 in 100 new points should fall. It is narrowest at the mean of x and widens away from it.
+struct TrendFit {
+    let intercept, slope, residualSD, meanX, sxx: Double
+    let count: Int
+    let xRange: ClosedRange<Double>
+    /// Student's t at 97.5% for count − 2 degrees of freedom (2.10 for 20 points; 1.96 only for large counts).
+    let t: Double
+
+    func trend(_ x: Double) -> Double { intercept + slope * x }
+    /// Half the band's height at x. Drop the "1 +" for the band around the mean line instead.
+    func margin(_ x: Double) -> Double {
+        t * residualSD * (1 + 1 / Double(count) + pow(x - meanX, 2) / sxx).squareRoot()
+    }
+}
+
 @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 struct TrendWithBand: View {
     let beans: [Bean]
-    let intercept: Double
-    let slope: Double
-    let margin: Double
+    let fit: TrendFit
 
     var body: some View {
         Chart {
-            PointPlot(beans, x: .value("Acidity", \.acidity), y: .value("Body", \.body))
-                .symbolSize(20)
-                .opacity(0.6)
-            AreaPlot(x: "Acidity", yStart: "Low", yEnd: "High") { [intercept, slope, margin] x in
-                let centre = intercept + slope * x
-                return (yStart: centre - margin, yEnd: centre + margin)
+            // The band first, so the points and the line are drawn over it, and both stop
+            // where the data does.
+            AreaPlot(x: "Acidity", yStart: "Low", yEnd: "High", domain: fit.xRange) { [fit] x in
+                (yStart: fit.trend(x) - fit.margin(x), yEnd: fit.trend(x) + fit.margin(x))
             }
             .foregroundStyle(Color.primary)
-            .opacity(0.2)
-            LinePlot(x: "Acidity", y: "Trend") { [intercept, slope] x in intercept + slope * x }
+            .opacity(0.15)
+            PointPlot(beans, x: .value("Acidity", \.acidity), y: .value("Body", \.body))
+                .symbolSize(20)
+            LinePlot(x: "Acidity", y: "Trend", domain: fit.xRange) { [fit] x in fit.trend(x) }
                 .foregroundStyle(Color.primary)
         }
         .chartXScale(domain: 2 ... 8)
-        .chartYScale(domain: 0 ... 8)
+        .chartYScale(domain: 0 ... 10)
         .chartPlotStyle { $0.clipped() }
     }
 }
