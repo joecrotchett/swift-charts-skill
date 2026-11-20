@@ -55,7 +55,7 @@ Designs that need SwiftUI beside or around the chart, or cannot be done.
 | Drop shadow or blur on marks | Native | iOS 16.4 | `shadow`, `blur` | `mark-modifiers.md` |
 | A reusable chart element with its own type | Native | iOS 16.0 | Conform a struct to `ChartContent` | `composition.md` |
 | Graph of a mathematical function, a trend line over a scatter plot, a fitted curve over a histogram, or a band around any of them | Native | iOS 18.0 | `LinePlot` and `AreaPlot` with a function; the app computes any fit. Below iOS 18, sample the function into `LineMark` data | `gallery/function-plot.md`, `vectorized-plots.md` |
-| A very large collection | Native | iOS 18.0 | Vectorized plots, for simpler code over many points; measured no faster than marks, so bin or aggregate to make it cheaper, on any release | `vectorized-plots.md` |
+| A very large collection | Native | iOS 18.0 | Vectorized plots, for simpler code over many points. Apple presents them as more efficient; one offscreen timing on the simulator here found a `PointPlot` no faster than marks. Promise neither: bin or aggregate to make it cheaper, on any release | `vectorized-plots.md` |
 
 ### Axes and scales
 
@@ -84,7 +84,7 @@ Designs that need SwiftUI beside or around the chart, or cannot be done.
 |---|---|---|---|---|
 | Value label above, beside or inside each bar | Native | iOS 16.0 | `annotation(position:alignment:)`; `.overlay` for inside | `annotations.md` |
 | Category names written on the bars | Native | iOS 17.0 | `annotation(position: .leading, ...)` fitted to the plot, with the axis hidden; `.overlay` on iOS 16 | `annotations.md` |
-| Label that stays inside the chart at its edges | Native | iOS 17.0 | `overflowResolution:` with `.fit(to:)` or `.padScale`; no edge handling on iOS 16 | `annotations.md` |
+| Label that stays inside the chart at its edges | Native | iOS 17.0 | `overflowResolution:` with `.fit(to:)` or `.padScale`, iOS 17 only | `annotations.md` |
 
 ### Plot area and layout
 

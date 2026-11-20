@@ -12,7 +12,7 @@ Minimum iOS 17.0 for the four scrolling modifiers.
 
 - `chartScrollableAxes(.horizontal)` turns scrolling on.
 - `chartXVisibleDomain(length:)` sets how much of the axis is visible. For a date axis the length is in seconds.
-- `chartScrollTargetBehavior(.valueAligned(matching:majorAlignment:))` makes scrolling come to rest on a boundary: here on a midnight, preferring the first of a month.
+- `chartScrollTargetBehavior(.valueAligned(matching:majorAlignment:))` makes scrolling come to rest on a boundary: here on a midnight, and, by Apple's description, on the first of a month when a swipe pages the chart. The simulator's synthesized swipes did not snap even to midnight (one rested at 11:07:49 UTC), so check the paging on a device.
 - `chartScrollPosition(x:)` binds the leading edge of the window, so the surrounding view can show the visible range and its total.
 
 <!-- snippet: Gallery/ScrollingBarChart.swift#chart -->
@@ -43,8 +43,8 @@ struct ScrollingBarChartRecipe: View {
         .chartXVisibleDomain(length: visibleSeconds)
         .chartScrollTargetBehavior(
             .valueAligned(
-                matching: DateComponents(hour: 0),
-                majorAlignment: .matching(DateComponents(day: 1))
+                matching: DateComponents(calendar: calendar, hour: 0),
+                majorAlignment: .matching(DateComponents(calendar: calendar, day: 1))
             )
         )
         .chartScrollPosition(x: $scrollPosition)

@@ -8,7 +8,7 @@ An arc, usually half a circle, partly filled with colour from one end, the rest 
 
 ## Composition
 
-**Verdict: escape hatch.** Swift Charts has no gauge mark and no way to set a sector chart's start or total angle. This form uses two documented behaviours together: a `SectorMark` angle can be a range that places the sector explicitly, and a chart is a view that can be rotated. Minimum iOS 17.0.
+**Verdict: escape hatch.** Swift Charts has no gauge mark and no way to set a sector chart's start or total angle. This form uses two behaviours together, both allowed by the interface and shown in the recipe's render: a `SectorMark` angle can be a range that places the sector explicitly, and a chart is a view that can be rotated. Minimum iOS 17.0.
 
 - Three sectors with angle ranges: the filled part, the track, and a clear sector that occupies the other half of the circle.
 - `rotationEffect(.degrees(-90))` turns the half ring, which would run from 12 o'clock to 6 o'clock, into an arch.

@@ -187,6 +187,6 @@ Choosing:
 ## Pitfalls
 
 - With overflow disabled, an annotation can draw outside the chart's frame and over neighbouring views. Reserve the space.
-- On an iOS 16 target the `overflowResolution:` form is gated; the plain form has no edge handling.
+- On an iOS 16 target the `overflowResolution:` form is gated, so the plain form is all there is. On iOS 27 the plain form drew exactly as `overflowResolution: .init()`, and a `.trailing` label on the last bar ran over the axis labels and off the view in both (iOS render). How iOS 16 draws it needs an iOS 16 runtime or device: leave room at the ends of the scale, or fix the domain.
 - An annotation below a bar that rises from zero (`position: .bottom`) makes room for itself by extending the scale below zero by as much as the label needs, rounded to the axis's round numbers: bars of 0 to 164 cups got an axis from -100 to 200, a third of the plot empty, and in a shorter chart -200. The same happens at `.bottomLeading` and `.bottomTrailing`. Put the label above or inside the bar, or fix the scale's domain.
 - An annotation's view is not an accessibility element. Anything written only there is invisible to VoiceOver; the label and value on the mark's `Plot` must carry it (`accessibility.md`).

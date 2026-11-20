@@ -43,4 +43,4 @@ struct VectorFieldRecipe: View {
 
 ## Accessibility
 
-Each point is an element read as its two bare numbers; the direction is not read and there is no automatic Audio Graph. Wrap each point in a `Plot` labelled with the position in words and valued with the direction and strength, and write a chart descriptor (`../audio-graph.md`).
+By default the field is read as columns of positions, one element per column ("1 to 2", "varies between 1 and 7, 4 values"), and the automatic Audio Graph has one unnamed series of the grid positions. The direction is in neither (read on iOS). Wrap each point in a `Plot` labelled with the position in words and valued with the direction and strength, and write a chart descriptor (`../audio-graph.md`).

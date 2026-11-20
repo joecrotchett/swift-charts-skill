@@ -9,7 +9,7 @@ A bar chart where each bar is divided into coloured segments stacked on top of e
 ## Composition
 
 - The data has one row per segment: category, sub-category, amount.
-- `BarMark` with the category and amount, plus `foregroundStyle(by:)` on the sub-category. That one modifier splits the bars, stacks the segments, assigns colours and adds the legend. Minimum iOS 16.0.
+- `BarMark` with the category and amount, plus `foregroundStyle(by:)` on the sub-category, which colours the segments and adds the legend. Bars that share a position stack with or without it (`../composition.md`). Minimum iOS 16.0.
 - `chartForegroundStyleScale` to choose the colours.
 
 <!-- snippet: Gallery/StackedBarChart.swift#scale -->
@@ -92,11 +92,11 @@ struct DivergingStackedBars: View {
 
 ## Accessibility
 
-By default each bar is one element, read as its total and the number of categories ("Latte, total 50, 3 Sizes"). To make each segment an element, wrap the mark in a labelled `Plot`; this chart is the worked example in `../accessibility.md`. A single bar divided into parts has no automatic Audio Graph: give it a chart descriptor (`../audio-graph.md`), its range 0 to the total.
+By default each bar is one element, read as its total and the number of categories ("Latte", "total 128, 3 Sizes", read on iOS; `../accessibility-defaults.md`). To make each segment an element, wrap the mark in a labelled `Plot`; this chart is the worked example in `../accessibility.md`. A single bar divided into parts has no automatic Audio Graph: give it a chart descriptor (`../audio-graph.md`), its range 0 to the total.
 
 **Colour is not enough on its own.** Bars have no symbol or dash, so the second cue is a direct label on each segment (`annotation(position: .overlay)`, legend hidden). Where a segment is too narrow for its label, say on screen what is given up. On the system palette white labels measured 2.2 to 4.2:1, black 5 to 10:1.
 
 ## Pitfalls
 
 - **Default colours can contradict the data.** If the sub-categories are themselves colours, or have a colour people expect (brand colours, red for errors), the automatic assignment will mislabel them. Set the scale explicitly.
-- **Stacking order and legend order are set in different places.** Segments stack bottom to top in the order the sub-categories first appear in the data. The legend follows the order written in `chartForegroundStyleScale`. Write the scale in the same order as the data, or the legend will read in a different order from the bars.
+- **Stacking order and legend order are set in different places.** Segments stack bottom to top in the order the sub-categories first appear in the data. The legend follows the order written in `chartForegroundStyleScale`, the dictionary literal included (rendered). Write the scale in the same order as the data, or the legend will read in a different order from the bars.

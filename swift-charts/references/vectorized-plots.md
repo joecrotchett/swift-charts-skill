@@ -18,7 +18,7 @@ A mark draws one data element, so a chart of marks is a `ForEach` that creates o
 
 Each plot's initializers mirror its mark's (`marks.md`), with the collection as the first argument and key paths in place of values.
 
-**Use a plot** for a larger data set whose points are all styled the same way, from the same properties, and to draw a function. A plot treats the collection as one thing and can process it in parallel. Do not promise a reader that it draws faster: in a single render on the iOS simulator (`ImageRenderer`, 1,000 to 20,000 points) a `PointPlot` and a `ForEach` of the same `PointMark`s took the same time, within 2%. Choose a plot for its shape, and measure before claiming speed.
+**Use a plot** for a larger data set whose points are all styled the same way, from the same properties, and to draw a function. A plot treats the collection as one thing and can process it in parallel. Apple presents plots as the efficient route for large data: they let Swift Charts "process larger collections of data more efficiently" (WWDC24, *Swift Charts: Vectorized and function plots*). What this project measured is one case: in one offscreen timing on the iOS simulator (`ImageRenderer`, median of six renders, 1,000 to 20,000 points) a `PointPlot` and a `ForEach` of the same `PointMark`s took the same time, within 2%. Neither settles a given chart, so promise a reader no speed either way: choose a plot for its shape, and measure before claiming speed.
 
 **Use marks** when there are fewer points and they need individual treatment: different mark types or modifiers per element, or layering between elements with `zIndex`. Marks are also the only choice on an iOS 17 or earlier target.
 
@@ -83,13 +83,13 @@ A plot is also `ChartContent`, so every modifier in `mark-modifiers.md` works on
 **Pitfalls:**
 
 - A key-path modifier after a plain-value one does not compile, and no error says why. What it says depends on the plain-value modifier (Xcode 27.0). After one with no key-path form, such as `symbol(.square)`, there are two errors on the key-path modifier's line: "instance method 'foregroundStyle(by:)' requires that 'KeyPath<Root, Value>' conform to 'Plottable'" and "cannot infer key path type from context; consider explicitly specifying a root type", whose suggestion does not help. After one that also has a key-path form (`opacity`, `symbolSize`, `lineStyle`, `foregroundStyle(_:)`), the compiler picks that form and the error lands on the plain-value line instead, reading as though that modifier wanted a key path: "cannot convert value of type 'Double' to expected argument type 'KeyPath<…, CGFloat>'" for `opacity(0.6)`, "no exact matches in call to instance method 'symbolSize'" for `symbolSize(40)`; with several, each line gets its own. In a longer expression the build may instead give up: "the compiler is unable to type-check this expression in reasonable time". Either way, move the key-path modifiers up.
-- A stored key path works as well as a literal (`.value("Colour", choice.keyPath)`), so a control can switch what a modifier reads. All the choices for one modifier must share a value type. Switching the key path inside `withAnimation`, or through a binding with `.animation(...)`, moves every point of a `PointPlot` to its new place.
+- A stored key path works as well as a literal (`.value("Colour", choice.keyPath)`), so a control can switch what a modifier reads. All the choices for one modifier must share a value type. Switched inside `withAnimation`, a `PointPlot`'s points do not move: they vanished while the animation ran and reappeared at their new places when it ended, where a `ForEach` of `PointMark`s slid each point (iOS 27 simulator). Use marks where the move should be seen.
 - A colour stored on each element is `foregroundStyle(\.colour)`, with no `by:`. `foregroundStyle(by:)` takes a `.value(...)` and makes a scale and a legend.
 - `symbolSize(by:)` needs `chartSymbolSizeScale(range:)`, as with marks (`mark-modifiers.md`).
 
 ### `MarkDimensions` - iOS 18.0+
 
-**Use for:** the `width:` and `height:` of `BarPlot` and `RectanglePlot` and the radii of `SectorPlot`. It is the plot counterpart of `MarkDimension` (`mark-configuration.md`) with the same cases, and each case also accepts a key path so the size can come from the element: `.fixed(\.barWidth)`, `.ratio(\.share)`.
+**Use for:** the `width:` and `height:` of `BarPlot` and `RectanglePlot` and the radii of `SectorPlot`. It is the plot counterpart of `MarkDimension` (`mark-configuration.md`) with the same cases, and each case except `.automatic` also accepts a key path so the size can come from the element: `.fixed(\.barWidth)`, `.ratio(\.share)`.
 
 ### Intervals and bars
 
@@ -218,7 +218,7 @@ Stating the domains also changes the picture, which is the better reason for it:
 - `LinePlot(x:y:domain:function:)` graphs y = f(x). `x` and `y` are the labels for the two values; the closure takes x and returns y.
 - `LinePlot(x:y:t:domain:function:)` graphs a parametric curve: the closure takes `t` and returns `(x:, y:)`. Its `domain` is required and must be finite.
 
-The labels are not decoration: VoiceOver's description of the chart names the axes with them ("The x axis is capacity density. The y axis is probability").
+The labels are not decoration: Apple's session on these plots (WWDC24) shows VoiceOver's description of the chart naming the axes with them ("The x axis is capacity density. The y axis is probability"). Hearing that needs a device. What was read on iOS: a function plot with no descriptor had no elements and no Audio Graph at all, so give it a labelled `Plot` (`accessibility.md`) and a chart descriptor.
 
 The curve is drawn across the chart's x scale. Set that scale with `chartXScale(domain:)`, and normally `chartYScale(domain:)` too, so the chart shows the part of the function that matters. `domain:` on the plot limits the function to part of the x scale.
 
@@ -252,7 +252,7 @@ struct ScatterWithTrendLine: View {
 
 **Pitfalls:**
 
-- Return `Double.nan` where the formula gives a number but the curve must not be drawn: outside the range a model is valid for, or a gap in a piecewise function. `.nan` and `.infinity` both leave a gap. A pole needs nothing: the plot never asks for y at the exact point (on iOS, about 3,000 calls for `1 / x` on -3 to 3, none at 0) and breaks the line there by itself, so a guard such as `x == 0 ? .nan : 1 / x` never runs. A pole where the sign flips is not joined either: `tan x` near π/2 was asked for 15,014 on one side and −3,522 on the other, and no line joined them. `log` and `sqrt` of a negative are already `.nan`, and `Double` division does not trap; guard only what would (integer arithmetic, an array index).
+- Return `Double.nan` where the formula gives a number but the curve must not be drawn: outside the range a model is valid for, or a gap in a piecewise function. `.nan` and `.infinity` both leave a gap. A pole needs nothing: the plot never asks for y at the exact point (on iOS, 1,529 calls for `1 / x` on -3 to 3 in one 320 × 220 render, none at 0) and breaks the line there by itself, so a guard such as `x == 0 ? .nan : 1 / x` never runs. A pole where the sign flips is not joined either: `tan x` near π/2 was asked for 15,014 on one side and −3,522 on the other, and no line joined them. `log` and `sqrt` of a negative are already `.nan`, and `Double` division does not trap; guard only what would (integer arithmetic, an array index).
 - A curve that leaves the y scale's domain is drawn outside the plot area, over the axis labels and beyond the chart's frame. Clip the plot area, which also removes the axis titles, so put the unit in the heading (`plot-area.md`):
 
 <!-- snippet: Plots/FunctionPlots.swift#undefined -->

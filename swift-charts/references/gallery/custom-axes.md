@@ -159,6 +159,7 @@ A label at the very end of the scale can be cut off at the chart's edge; leave r
 
 ## Pitfalls
 
-- At phone width the two-line labels every three hours are truncated to "12…"; pass a six-hour stride there.
-- With AM and PM omitted, the hour is drawn with two digits ("03", "09"). That is the format's output, not a further customisation.
+- The two-line labels truncate when the chart covers more hours than its width allows: 48 hours at 393 points drew "12 AM" and its date as "1…" over "…", and at `.accessibility3` one character each (iOS render). A six-hour stride gives each label twice the room; check at phone width and the largest text size.
+- Data starting at 01:00 put the marks at 01, 04, 07…: none on midnight, so no date after the first label and no solid line. Start the data at midnight (`../axes.md`, *Pitfalls*).
+- With AM and PM omitted, the hour is "3", "6", "9" on iOS (en_US) and "03", "09" in the macOS render above. That is the format's output on each platform, not a further customisation.
 - All of `../axes.md`'s pitfalls apply.

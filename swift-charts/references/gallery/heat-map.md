@@ -54,6 +54,40 @@ struct GradientHeatMap: View {
 }
 ```
 
+**A key that stays readable at large text.** The automatic gradient legend labels round values, which can lie past the domain, and collides at large text (`../legend.md`). A key of your own, a strip with the domain's two ends, stayed readable at `.accessibility5` (iOS render):
+
+<!-- snippet: Gallery/HeatMapChart.swift#own-key -->
+```swift
+struct HeatMapWithOwnKey: View {
+    let cells: [HourlyOrders]
+    /// Fixed, so the key's two numbers are the ends of the colours drawn.
+    let domain: ClosedRange<Int>
+    private let gradient = Gradient(colors: [.yellow, .red])
+
+    var body: some View {
+        HeatMapRecipe(cells: cells)
+            .chartForegroundStyleScale(domain: domain, range: gradient)
+            // In place of the gradient legend, whose numbers collide at large text: a strip and its two ends.
+            .chartLegend(position: .bottom, alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Orders")
+                    LinearGradient(gradient: gradient, startPoint: .leading, endPoint: .trailing)
+                        .frame(height: 10)
+                        .clipShape(RoundedRectangle(cornerRadius: 2))
+                    HStack {
+                        Text(domain.lowerBound, format: .number)
+                        Spacer()
+                        Text(domain.upperBound, format: .number)
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(Color.secondary) // or it takes the tint colour
+                .frame(maxWidth: 220)
+            }
+    }
+}
+```
+
 **Numbers on both axes.** Bin each axis and pass the bins as the x and y values. The axes are then continuous, and `.ratio(0.9)` leaves a thin gap between cells. The automatic labels fall on bin boundaries only when the axis's own stride happens to match the bin size; pass the boundaries, `AxisMarks(values: bins.thresholds)`, to put a label on each. Left at its defaults this version is wrong in its own way: each cell is about 70% of its bin, and both number scales start at zero and run past the bins, so set the sizes and the scale domains.
 
 ![A grid of blue cells on number axes, darkest near the middle, with a gradient legend from 0 to 8.](../../assets/gallery/heat-map-binned.png)
@@ -108,11 +142,11 @@ The recipe bins in a computed property, which runs again on every redraw. For a 
 
 ## Accessibility
 
-By default each column is one element giving the average of its cells ("7am, average 53, 6 Days"), so the individual cells are lost, and there is no automatic Audio Graph. Wrap each cell in a `Plot` labelled with both categories and the value, and write a chart descriptor with one series per row (`../accessibility.md`, `../audio-graph.md`).
+By default each column is one element giving the average of its cells, unrounded, and a count of the rows ("6 am", "average 46.857143, 7 Days"; `../accessibility-defaults.md`), so the individual cells are lost, and there is no automatic Audio Graph. Wrap each cell in a `Plot` labelled with both categories and the value, and write a chart descriptor with one series per row (`../accessibility.md`, `../audio-graph.md`).
 
 ## Pitfalls
 
 - **"Light to dark" is the Light Mode ramp.** In Dark Mode the default gradient runs from near-black for low values to bright for high ones. Do not describe the cells as darker or lighter in text beside the chart.
 - **Left at its defaults the chart is not a grid.** The row names are drawn inside the plot, above each row, and the cells shrink to thin strips beneath them. Move the row labels outside and set both sizes, as in the recipe.
 - The data needs a row for every cell. A missing combination leaves a hole.
-- The gradient legend's numbers are not thinned at large text and collide; draw your own key with `chartLegend(position:alignment:spacing:content:)` there (`../legend.md`, *A legend of your own*).
+- The gradient legend's numbers are not thinned at large text: "0 20 40 60 80" collided at `.accessibility3` (iOS render). Draw your own key, as in *Variations*.

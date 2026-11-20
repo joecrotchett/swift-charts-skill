@@ -150,8 +150,8 @@ A chart draws the data it is given; it does not count or sum. To show how values
 | Initializer | Bins |
 |---|---|
 | `NumberBins(data: values)` | A count chosen from the data |
-| `NumberBins(data: values, desiredCount: 8)` | About that many, with round boundaries. Asking for 8 can give 10 |
-| `NumberBins(range: 0 ... 100, count: 5)` | Exactly that many equal bins |
+| `NumberBins(data: values, desiredCount: 8)` | About that many, with round boundaries. Asking for 8 on data from 0 to 100 gave 10 |
+| `NumberBins(range: 0 ... 100, count: 5)` | Exactly that many equal bins. With integers the range's length must be a multiple of the count: `0 ... 100` with a count of 3 stopped the program |
 | `NumberBins(range: 0 ... 100, desiredCount: 5)` | About that many over a range you set, with round boundaries |
 | `NumberBins(size: 10, range: 0 ... 100)` | Equal bins of a given width |
 | `NumberBins(thresholds: [0, 18, 35, 65, 120])` | Bins between the boundaries you list; N boundaries make N - 1 bins |

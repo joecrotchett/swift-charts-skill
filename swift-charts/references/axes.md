@@ -59,7 +59,7 @@ Stating the unit here keeps the labels on the axis marks short (`design.md`, *Ax
 | `stroke:` | The stroke of default grid lines and ticks | `StrokeStyle` |
 | A trailing closure | What is drawn at each value, replacing the defaults | Axis marks, below. `format:` exists only without one (with both, it does not compile); inside a closure pass `format:` to `AxisValueLabel` |
 
-`AxisMarks()` with no arguments recreates the default axis, so start from it and add one parameter at a time. A default category axis draws grid lines and labels but no ticks; a number or date axis draws all three. Without a closure, `AxisMarks` draws the default grid line, tick and label at each value. That is enough to change the count, the format or the side:
+`AxisMarks()` with no arguments recreates the default axis, so start from it and add one parameter at a time. A default category axis draws grid lines and labels but no ticks (iOS render), and so does the default y axis of numbers. A default x axis of numbers or of dates draws ticks: short dashed segments below the axis line, continuing each grid line beside its label. Listing `AxisGridLine()` and `AxisValueLabel()` in a closure drops them; add `AxisTick()` to keep them (iOS render). Without a closure, `AxisMarks` draws the default marks at each value. That is enough to change the count, the format or the side:
 
 <!-- snippet: Axes/AxisRecipes.swift#format -->
 ```swift
@@ -109,7 +109,7 @@ The closure can take the `AxisValue` it is drawing, to decide per value what to 
 
 Each also takes `roundLowerBound:` and `roundUpperBound:`. The chart does not report which values its axis drew or which labels it dropped. When text has to name them, pass the values yourself (`AxisMarks(values:)`) and name only those.
 
-A time of day held as a number of hours gets automatic labels at round numbers, not clock times (6 to 18 was labelled 10 and 15): give it explicit values at a clock step (every 3 hours) with labels written as times, or plot it as a `Date`.
+A time of day held as a number of hours gets automatic labels at round numbers, not clock times (hours from about 6 to 18 were labelled 10 and 15 on one chart, 5, 10 and 15 on another): give it explicit values at a clock step (every 3 hours) with labels written as times, or plot it as a `Date`.
 
 ### `AxisMarkPosition` - iOS 16.0+
 
@@ -168,7 +168,7 @@ The three things drawn at each value, used inside an `AxisMarks` closure. Each t
 
 ### `AxisGridLine` - iOS 16.0+
 
-**Use for:** the line across the plot at a value. `AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))` sets width and dash; `centered:` moves it to the middle of a band or unit. Colour it with `foregroundStyle`.
+**Use for:** the line across the plot at a value. `AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))` sets width and dash; `centered:` draws it between two axis values instead of at one. Colour it with `foregroundStyle`.
 
 ### `AxisTick` - iOS 16.0+
 
@@ -185,7 +185,7 @@ The three things drawn at each value, used inside an `AxisMarks` closure. Each t
 | `AxisValueLabel("Goal")` | Fixed text |
 | `AxisValueLabel { VStack { ... } }` | Any view, such as two lines of text |
 
-The automatic format switches to scientific notation ("8.0E6", "2.0E7") once an axis reaches several million. Give such an axis a format. Compact notation ("20M") also saves width in a narrow chart:
+The automatic format switches to scientific notation in the low millions: an axis topping out at 2,000,000 was labelled with separators ("2,000,000", "1,500,000"), one topping out at 3,000,000 (data to 2,500,000) "3.0E6", "2.0E6", "1.0E6", and one to 15 million "1.5E7", "1.0E7", "5.0E6" (iOS render; macOS drew the same). Give an axis of millions a format. Compact notation ("20M") also saves width in a narrow chart:
 
 <!-- snippet: Design/HIGPatterns.swift#compact-labels -->
 ```swift
@@ -201,7 +201,7 @@ func shortValueLabels() -> some View {
 Parameters that matter:
 
 - `centered:` puts the label in the middle of its band or unit instead of at its start. It defaults to true for categories and false for numbers and dates. Set it to true on a date axis whose marks are plotted with a matching `unit:` and labelled at every unit, so each label sits under its bar. It centres the label between two neighbouring axis marks, not within the unit: with a label every third day the label sits under the middle of the three, so leave it false whenever the stride is longer than the unit.
-- `orientation:` is `.horizontal`, `.vertical` (reading top to bottom) or `.verticalReversed`.
+- `orientation:` is `.automatic` (the default), `.horizontal`, `.vertical` (reading top to bottom) or `.verticalReversed`.
 - `collisionResolution:` decides what happens when labels do not fit on the default axis. An `AxisValueLabel` listed in an `AxisMarks` closure did not truncate category names, even with `.truncate` set: long names overlapped, so turn them vertical or use fewer. Date labels did truncate at the accessibility sizes ("Mar 1" to "Ma…", "M…" and "…", and one was dropped). The options: `.truncate` shortens them (with an ellipsis while there is room for one; on a narrow band only a letter or two is left), `.greedy` keeps the first label and then each next one that clears the last one drawn, `.disabled` draws them all even if they overlap, and the last can run past the plot's trailing edge. Vertical labels take their height from the plot, so the bars lose height to the longest name; they also log a harmless runtime message about `anchor:` values. `.greedy(priority:minimumSpacing:)` lets some labels win over others.
 - `anchor:`, `multiLabelAlignment:`, `horizontalSpacing:` and `verticalSpacing:` adjust placement.
 - A number or date label on a horizontal axis sits after its grid line, so a label with less room than its width before the plot's trailing edge is left out, or runs past the chart's frame. It need not be at the edge: weekly labels over 30 days lost "Mar 29" at iPhone width, two days short of the end, and kept it on iPad. Check the last label at phone width, and never name in a headline a day whose label is gone; mark it on the chart instead. `AxisMarks(preset: .aligned)` centres each label on its line and so labels both ends; give the scale's range a little padding so the end labels stay inside the chart's frame (cap a `@ScaledMetric` padding, or it squeezes the plot at the largest sizes). Centred labels reach each other sooner than labels after their lines: at the accessibility sizes, show fewer or shorter ones. A function plot draws into that padding, past its domain, and at the accessibility sizes the centred last x label can meet the trailing y axis's lowest label: there, anchor only the last label so it ends at its line, `AxisValueLabel(anchor: .topTrailing)` (iOS).
@@ -243,8 +243,8 @@ The worked example in `gallery/custom-axes.md` uses both: an axis that marks eve
 
 **Pitfalls:**
 
-- A test such as `hour == 0` only matches if the stride lands on that value. With a stride of three hours the data must start at an hour divisible by three.
-- A label gets only the space between two marks. Two-line labels every three hours are truncated at phone width; use a longer stride there.
+- A test such as `hour == 0` only matches if a mark lands on that value. A date stride counts from the start of the data, not from midnight: hourly data from 01:00 with `.stride(by: .hour, count: 3)` put marks at 01, 04, 07…, so no mark fell on midnight and the day boundary went unmarked (iOS render). Start the data on the boundary, or pass the axis an array of dates that does.
+- Two-line labels truncate at phone width: 48 hours labelled every three hours at 393 points drew "12 AM" and its date as "1…" over "…", and at `.accessibility3` cut every label to one character ("1", and "M" for the date; iOS render). A shorter stride leaves each label less room.
 
 ## Styling axis marks and whole axes
 
@@ -279,7 +279,7 @@ struct StyledAxis: View {
 }
 ```
 
-`AnyAxisMark` and `AnyAxisContent` are type erasers, for a function that returns different axis marks or axis content from different branches. Axis content that both axes share goes in an `@AxisContentBuilder` property returning `some AxisContent`, as `@ChartContentBuilder` does for marks; one property serves a category axis and a number axis.
+`AnyAxisMark` and `AnyAxisContent` are type erasers, for a function that returns different axis marks or axis content from different branches. Axis content that both axes share goes in an `@AxisContentBuilder` property returning `some AxisContent`, as `@ChartContentBuilder` does for marks; one property served a category x axis and a number y axis (compiled and rendered).
 
 From iOS 17.0, `chartXAxisStyle` and `chartYAxisStyle` receive the whole axis as a view (`ChartAxisContent`). That view includes the axis's grid lines, so a background applied to it covers the plot area.
 

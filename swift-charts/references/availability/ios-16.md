@@ -14,11 +14,11 @@ Platform versions that ship together, unless a row's *Platforms* cell says other
 | API | Kind | iOS | Members | Platforms | Topic |
 |---|---|---|---|---|---|
 | `AxisContent` | protocol | 16.0 | see modifier tables |  | axes |
-| `AnyAxisContent` | struct | 16.0 | `init(_:)` |  | axes |
+| `AnyAxisContent` | struct | 16.0 | `init(_:)`, `init(erasing:)` |  | axes |
 | `AxisContentBuilder` | struct | 16.0 |  |  | axes |
 | `AxisGridLine` | struct | 16.0 | `init(centered:stroke:)` |  | axes |
 | `AxisMark` | protocol | 16.0 | see modifier tables |  | axes |
-| `AnyAxisMark` | struct | 16.0 | `init(_:)` |  | axes |
+| `AnyAxisMark` | struct | 16.0 | `init(_:)`, `init(erasing:)` |  | axes |
 | `AxisMarkBuilder` | struct | 16.0 |  |  | axes |
 | `AxisMarks` | struct | 16.0 | `init(preset:position:values:content:)`, `init(format:preset:position:values:stroke:)`, `init(preset:position:values:stroke:)` |  | axes |
 | `AxisMarkPreset` | struct | 16.0 | `automatic`, `extended`, `aligned`, `inset` |  | axes |
@@ -31,20 +31,20 @@ Platform versions that ship together, unless a row's *Platforms* cell says other
 | `AxisValueLabelOrientation` | struct | 16.0 | `automatic`, `horizontal`, `vertical`, `verticalReversed` |  | axes |
 | `AxisValueLabelCollisionResolution` | struct | 16.0 | `automatic`, `greedy`, `greedy(priority:minimumSpacing:)`, `truncate`, `disabled` |  | axes |
 | `ChartBinRange` | struct | 16.0 | `lowerBound`, `upperBound`, `contains(_:)`, `relative(to:)` |  | data |
-| `DateBins` | struct | 16.0 | `thresholds`, `init(thresholds:)`, `init(timeInterval:range:)`, `init(unit:by:range:calendar:)`, `init(range:desiredCount:calendar:)`, `init(data:desiredCount:calendar:)` |  | data |
-| `NumberBins` | struct | 16.0 | `thresholds`, `init(thresholds:)`, `init(size:range:)`, `init(range:count:)`, `init(range:desiredCount:minimumStride:)`, `init(data:desiredCount:minimumStride:)` |  | data |
+| `DateBins` | struct | 16.0 | `thresholds`, `init(thresholds:)`, `init(timeInterval:range:)`, `init(unit:by:range:calendar:)`, `init(range:desiredCount:calendar:)`, `init(data:desiredCount:calendar:)`, `index(for:)` |  | data |
+| `NumberBins` | struct | 16.0 | `thresholds`, `init(thresholds:)`, `init(size:range:)`, `init(range:count:)`, `init(range:desiredCount:minimumStride:)`, `init(data:desiredCount:minimumStride:)`, `index(for:)` |  | data |
 | `Chart` | struct | 16.0 | `init(content:)`, `init(_:content:)`, `init(_:id:content:)` |  | composition |
 | `ChartContent` | protocol | 16.0 | see modifier tables |  | composition |
 | `AnnotationPosition` | struct | 16.0 | `automatic`, `overlay`, `top`, `bottom`, `leading`, `trailing`, `topLeading`, `topTrailing`, `bottomLeading`, `bottomTrailing` |  | annotations |
 | `AnnotationContext` | struct | 16.0 | `targetSize` |  | annotations |
 | `ChartContentBuilder` | struct | 16.0 |  |  | composition |
-| `AnyChartContent` | struct | 16.0 | `init(_:)` |  | composition |
+| `AnyChartContent` | struct | 16.0 | `init(_:)`, `init(erasing:)` |  | composition |
 | `ChartPlotContent` | struct | 16.0 |  |  | plot-area |
 | `ChartProxy` | struct | 16.0 | `plotAreaFrame`, `plotAreaSize`, `position(forX:)`, `position(forY:)`, `position(for:)`, `positionRange(forX:)`, `positionRange(forY:)`, `positionRange(for:)`, `value(atX:as:)`, `value(atY:as:)`, `value(at:as:)` |  | plot-area |
 | `Plot` | struct | 16.0 | `init(content:)` |  | composition |
-| `ChartSymbolShape` | protocol | 16.0 | `strokeBorder(lineWidth:)`, `strokeBorder(style:)`, `circle`, `square`, `triangle`, `diamond`, `pentagon`, `plus`, `cross`, `asterisk` |  | mark-configuration |
-| `AnyChartSymbolShape` | struct | 16.0 | `init(_:)` |  | mark-configuration |
-| `BasicChartSymbolShape` | struct | 16.0 | `strokeBorder(lineWidth:)` |  | mark-configuration |
+| `ChartSymbolShape` | protocol | 16.0 | `perceptualUnitRect`, `strokeBorder(lineWidth:)`, `strokeBorder(style:)`, `circle`, `square`, `triangle`, `diamond`, `pentagon`, `plus`, `cross`, `asterisk` |  | mark-configuration |
+| `AnyChartSymbolShape` | struct | 16.0 | `init(_:)`, `perceptualUnitRect` |  | mark-configuration |
+| `BasicChartSymbolShape` | struct | 16.0 | `perceptualUnitRect`, `strokeBorder(lineWidth:)` |  | mark-configuration |
 | `AreaMark` | struct | 16.0 | `init(x:y:stacking:)`, `init(xStart:xEnd:y:)`, `init(x:yStart:yEnd:)`, `init(x:y:series:stacking:)`, `init(xStart:xEnd:y:series:)`, `init(x:yStart:yEnd:series:)` |  | marks |
 | `BarMark` | struct | 16.0 | `init(x:y:width:height:stacking:)`, `init(x:yStart:yEnd:width:stacking:)`, `init(xStart:xEnd:y:height:stacking:)`, `init(xStart:xEnd:y:height:)`, `init(xStart:xEnd:yStart:yEnd:)`, `init(x:yStart:yEnd:width:)` |  | marks |
 | `LineMark` | struct | 16.0 | `init(x:y:)`, `init(x:y:series:)` |  | marks |
@@ -54,8 +54,8 @@ Platform versions that ship together, unless a row's *Platforms* cell says other
 | `PointMark` | struct | 16.0 | `init(x:y:)` |  | marks |
 | `RectangleMark` | struct | 16.0 | `init(x:y:width:height:)`, `init(x:yStart:yEnd:width:)`, `init(xStart:xEnd:y:height:)`, `init(xStart:xEnd:yStart:yEnd:)` |  | marks |
 | `RuleMark` | struct | 16.0 | `init(xStart:xEnd:y:)`, `init(x:yStart:yEnd:)` |  | marks |
-| `Plottable` | protocol | 16.0 |  |  | data |
-| `PrimitivePlottableProtocol` | protocol | 16.0 |  |  | data |
+| `Plottable` | protocol | 16.0 | `primitivePlottable`, `init(primitivePlottable:)` |  | data |
+| `PrimitivePlottableProtocol` | protocol | 16.0 | `primitivePlottable`, `init(primitivePlottable:)` |  | data |
 | `PlottableValue` | struct | 16.0 | `value(_:_:)`, `value(_:_:unit:calendar:)` |  | data |
 | `ScaleType` | struct | 16.0 | `linear`, `log`, `date`, `category` |  | scales |
 | `ScaleDomain` | protocol | 16.0 | `automatic`, `automatic(includesZero:reversed:)`, `automatic(includesZero:reversed:dataType:modifyInferredDomain:)` |  | scales |

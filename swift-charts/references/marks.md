@@ -38,7 +38,7 @@ Pick the parameters from what the mark should do on each axis. `RuleMark(y:)` is
 
 A size parameter exists only on the form that has it. With a value on both axes it is `BarMark(x:y:width:)` for vertical bars and `BarMark(x:y:height:)` for horizontal ones. A bar with no category takes the one named for the axis that has the value, `BarMark(x:width:)` or `BarMark(y:height:)`, and there it changes nothing: the bar fills the plot across. Size such a bar with the chart's frame (`gallery/stacked-bar.md`).
 
-The start and end parameters of the left-out axis also accept a `CGFloat`. That is a distance in points from the plot area's top-leading corner, not a data value. Use it only for decoration at a fixed place.
+The start and end parameters of the left-out axis also accept a `CGFloat`. That is a distance in points, not a data value: from the plot area's top edge for a y start or end, and from its left edge for an x one (macOS render, left to right). Use it only for decoration at a fixed place.
 
 ## Mark types
 
@@ -164,12 +164,12 @@ Examples: `gallery/bar.md`, `gallery/stacked-bar.md`, `gallery/range-bar.md`.
 `SectorMark(angle:innerRadius:outerRadius:angularInset:)`. Only `angle` is required.
 
 - `angle`: the value. Each sector's share of the circle is its value over the sum. It also accepts a range, `.value("Progress", 0 ..< 30)`, which places the sector between two explicit positions on a scale that runs from zero to the largest value in the chart; parts of that scale no sector covers stay empty.
-- `innerRadius`: zero (the default) is a pie; anything larger is a donut. `.ratio(0.618)` is a well-proportioned ring; `.ratio` and `.inset` are measured against the outer radius, so `.inset(30)` is a ring 30 points thick.
-- `outerRadius`: `.ratio` and `.inset` are measured against the plot area, so `.inset(10)` leaves a 10-point margin.
-- `angularInset`: a gap between sectors, in points taken off each side, so `1.5` leaves a 3-point gap. It adds contrast between neighbouring sectors, which helps accessibility and readability. Keep it small (1 to 1.5), like the corner radius, so the sectors' shapes and relative sizes are not distorted. Very small sectors can disappear when an inset is set.
+- `innerRadius`: the default (`.automatic`) draws a pie; a larger radius makes a donut. `.ratio(0.618)` is a well-proportioned ring; `.ratio` and `.inset` are measured against the outer radius, so `.inset(30)` is a ring 30 points thick.
+- `outerRadius`: by default half the plot area's shorter side, so the circle fills the plot's height or width; `.inset(10)` leaves a 10-point margin inside that. (Radii measured in macOS renders.)
+- `angularInset`: a gap between sectors, in points taken off each side, so `1.5` leaves a 3-point gap. It adds contrast between neighbouring sectors, which helps accessibility and readability. Keep it small, like the corner radius (Apple's examples use 1 and 1.5), so the sectors' shapes and relative sizes are not distorted. Very small sectors may not be discernible, especially with an inset.
 - `cornerRadius` rounds the corners; `foregroundStyle(by:)` colours the sectors and makes the legend.
 
-The angle values are normalized to the full circle automatically; pass the raw amounts. Sectors start at 12 o'clock and run clockwise in data order, so order the data largest first, with any "Other" group last. A chart of sectors has no axes. Values must be positive.
+The angle values are normalized to the full circle automatically; pass the raw amounts. Sectors start at 12 o'clock and run clockwise in data order (gallery renders), so order the data largest first, with any "Other" group last. A chart of sectors has no axes. Values must be positive.
 
 Text in the hole of a donut is a view placed with `chartBackground` (`plot-area.md`). Selecting a sector uses `chartAngleSelection` (`interaction.md`). Recipe: `gallery/donut.md`.
 

@@ -10,7 +10,7 @@ Which Swift Charts API exists on which OS version. This file is the overview; th
 4. Never raise the deployment target to reach an API without asking.
 5. When a design depends on a gated API, say what people on the older OS will see instead.
 
-An API name that appears in none of the release files is not Swift Charts API. Check the spelling, or it belongs to SwiftUI.
+An API name that appears in none of the release files is not Swift Charts API: check the spelling, or it belongs to SwiftUI. The tables list every public declaration, protocol requirements included (`perceptualUnitRect`, `updateTarget(_:context:)`), except the plumbing of a collection or literal (`startIndex`, `endIndex`, `index(after:)`, `subscript`, `path(in:)`, `==`, `init(integerLiteral:)`, `init(floatLiteral:)`).
 
 ## Releases
 
@@ -24,6 +24,8 @@ An API name that appears in none of the release files is not Swift Charts API. C
 | `ios-27.md` | 27.0 | 27.0 | 27.0 | 27.0 | 27.0 | No new chart API. SwiftUI's `EmptyView` and `TupleContent` conform to `ChartContent`. |
 
 The framework is on every visionOS release, so API from iOS 16 and 17 needs no visionOS check.
+
+The generated `ios-26.md` header lists 26.0 for every platform because that is the version number they share; its rows mark each 3D API *Not on tvOS, watchOS*, which is what *none* means above.
 
 ## Platform differences
 

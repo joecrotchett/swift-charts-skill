@@ -85,7 +85,7 @@ struct SelectedDayBand: ChartContent {
 ## Pitfalls
 
 - **A band on a category axis, declared before the marks, adds its category to the axis first,** so the selected row moves to the top (seen on iOS). Fix the order with `chartYScale(domain:)`.
-- **The hidden band says nothing,** so VoiceOver is not told what is selected: end the selected element's value with "selected" (read on iOS), and give the chart a new `.id` when the selection changes, since changed labels are otherwise not read again (`../accessibility.md`).
+- **The hidden band says nothing,** so VoiceOver is not told what is selected: end the selected element's value with "selected" (read on iOS). The changed label is updated in place, with no new `.id` (read on iOS 27); a chart descriptor that names the selection is not, so give the chart an `.id` built from the selection when it has one (`../accessibility.md`, *Pitfalls*).
 - **Text that promises the band "in both" charts** is wrong for a day only one of them recorded: the other has no bar there and draws none.
 - The bound value is the raw position, not a data point. The band's `unit:` places it on the right day for drawing; snap the value yourself before using it to look anything up (`../interaction.md`).
 - On an iOS 16 target the selection modifier has to be gated. Replace `chartXSelection` with the gated modifier under *Custom gestures* in `../interaction.md`, which falls back to an overlay gesture writing the same binding; the band and everything else here are iOS 16.0.

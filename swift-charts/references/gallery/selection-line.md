@@ -178,8 +178,14 @@ struct BrushingChart: View {
                         DragGesture()
                             .onChanged { drag in
                                 let originX = geometry[proxy.plotAreaFrame].origin.x
-                                if let start: Date = proxy.value(atX: drag.startLocation.x - originX),
-                                   let current: Date = proxy.value(atX: drag.location.x - originX) {
+                                let width = proxy.plotAreaSize.width
+                                // Outside the plot a date scale still answers, with a date beyond the data:
+                                // start a brush only inside the plot, and stop it at the plot's edges.
+                                let startX = drag.startLocation.x - originX
+                                guard (0 ... width).contains(startX) else { return }
+                                let currentX = min(max(drag.location.x - originX, 0), width)
+                                if let start: Date = proxy.value(atX: startX),
+                                   let current: Date = proxy.value(atX: currentX) {
                                     range = min(start, current) ... max(start, current)
                                 }
                             }
@@ -192,12 +198,12 @@ struct BrushingChart: View {
 
 ## Accessibility
 
-The selection rule, range rules and brush rectangle are hidden from assistive technologies, as the recipes do: they repeat what the marks say, and a visible one reads as a position with no value. With several series, wrap each point's mark in a labelled `Plot` (`../accessibility.md`).
+The selection rule, range rules and brush rectangle are hidden from assistive technologies, as the recipes do: they repeat what the marks say. With several series, wrap each point's mark in a labelled `Plot` (`../accessibility.md`).
 
 ## Pitfalls
 
 - **The selection value is raw.** It is the exact position on the axis, for example 07:14 on a day, not the nearest data point. Snap it before drawing anything from it or looking up values.
 - **Leave room above the chart.** With vertical overflow disabled the label draws outside the chart's frame. Reserve the space, or put the label where a title is and hide the title while a selection is active.
-- **Keep the layout still while the finger moves.** A headline that follows the selection changes length, and if it wraps to fewer lines everything below it moves: on one screen the chart jumped 37 points under the finger. Reserve the height of the longest headline the chart can show, for example with a hidden copy of it behind the visible one.
+- **Keep the layout still while the finger moves.** A headline that follows the selection changes length, and if it wraps to fewer lines everything below it moves: on one screen the chart jumped 37 points under the finger. Reserve the height of the longest headline the chart can show, for example with a hidden copy of it behind the visible one. This is for a headline the finger or a scroll drives; one only a control changes reserves nothing, since at accessibility sizes the longest message can be several lines taller than the one shown, leaving a blank band above the chart (seen on several screens).
 - Draw the indicator as a mark inside the chart, not as an overlay, so it stays aligned with the data when the chart resizes.
 - On an iOS 16 deployment target, selection is built with `chartOverlay`, `ChartProxy` and a gesture: see `../availability/README.md`.

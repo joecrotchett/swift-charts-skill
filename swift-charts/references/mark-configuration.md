@@ -22,7 +22,7 @@ Pictured in `gallery/area.md`.
 | Case | Size |
 |---|---|
 | `.automatic` | The default for the mark |
-| `.ratio(0.6)` | A fraction, from 0 to 1, of the scale's step: the band of a category, or one unit of a date plotted with `unit:`. `.ratio(1)` makes neighbours touch |
+| `.ratio(0.6)` | A proportion of the scale's step: the band of a category, or one unit of a date plotted with `unit:`. `.ratio(1)` makes neighbours touch |
 | `.inset(4)` | The step less 4 points on each side. Gaps stay the same width however many bars there are |
 | `.fixed(8)` | 8 points, whatever the step. A bare number means the same: `width: 8`. Wider than the step, bars overlap and the outer ones run past the plot over the axis labels; clip the plot area (`plot-area.md`) or use a ratio |
 
@@ -41,7 +41,9 @@ How `.ratio` and `.inset` are measured for a sector's radii is under `SectorMark
 | `.stepStart` | A vertical jump at each point, then flat at the next point's value | Each value applies to the interval leading up to its point |
 | `.stepCenter` | The jump halfway between points | Each value stands for a period centred on its point |
 
-`.catmullRom(alpha:)` takes 0 for a uniform spline, 0.5 for centripetal and 1 for chordal. `.cardinal(tension:)` controls how tight the curve is; at 1 the line is straight.
+`.catmullRom` is `.catmullRom(alpha: 0.5)` and `.cardinal` is `.cardinal(tension: 0)`; the parameterised forms change that one value.
+
+Apple's documentation says `.stepEnd` puts the data point "at the end of the step" and `.stepStart` "at the start": the step there is the vertical jump, so under `.stepEnd` each point sits at the top of the jump into it and then holds its value (rendered: `gallery/line-shapes.md`).
 
 Pictured in `gallery/line-shapes.md`.
 
@@ -67,7 +69,7 @@ struct OutlinedSymbols: View {
 
 ### `ChartSymbolShape` - iOS 16.0+
 
-**Use for:** a symbol the framework does not provide. Conform a `Shape` to `ChartSymbolShape` and implement `perceptualUnitRect`, the part of the unit square the shape should fill so that it looks the same size as the built-in symbols. A square needs about 0.75 of the width to match a circle. Under main-actor default isolation mark the shape, and anything a symbol scale's mapping calls, `nonisolated`. Also conform to `InsettableShape` to get `strokeBorder`, which gives an outlined symbol instead of a filled one.
+**Use for:** a symbol the framework does not provide. Conform a `Shape` to `ChartSymbolShape` and implement `perceptualUnitRect`, a rectangle in symbol units. The shape's path is drawn in that rectangle scaled by the symbol size, so a larger rectangle draws a larger symbol. `Circle` and every built-in symbol report `(-0.064, -0.064, 1.128, 1.128)`, a circle with the area of the unit square; a square path filling its rectangle matches that circle's area with `CGRect(x: 0, y: 0, width: 1, height: 1)`, and at 0.75 it draws visibly smaller (printed and rendered on macOS). Under main-actor default isolation mark the shape, and anything a symbol scale's mapping calls, `nonisolated`. Also conform to `InsettableShape` to get `strokeBorder`, which gives an outlined symbol instead of a filled one.
 
 Example: `gallery/multi-series-line.md`.
 

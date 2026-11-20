@@ -81,7 +81,9 @@ The square is a custom symbol:
 
 <!-- snippet: Gallery/MultiSeriesLineChart.swift#symbol -->
 ```swift
-/// A custom symbol. `perceptualUnitRect` shrinks it so it looks the same size as a circle.
+/// A custom symbol. Its path is drawn in `perceptualUnitRect` scaled by the symbol size.
+/// The circle reports a slightly larger rectangle than the unit square, sized so its area
+/// equals the square's, so the unit square gives this square the circle's area.
 struct RoundedSquare: ChartSymbolShape, InsettableShape {
     var inset: CGFloat = 0
 
@@ -96,8 +98,7 @@ struct RoundedSquare: ChartSymbolShape, InsettableShape {
     }
 
     var perceptualUnitRect: CGRect {
-        let scale: CGFloat = 0.75
-        return CGRect(x: 0.5 - scale / 2, y: 0.5 - scale / 2, width: scale, height: scale)
+        CGRect(x: 0, y: 0, width: 1, height: 1)
     }
 }
 ```
@@ -106,12 +107,12 @@ What each modifier in the styled version does:
 
 - `interpolationMethod(.catmullRom)` curves the line through the points.
 - `symbol(by:)` with `chartSymbolScale` gives each series its own point shape, so the series are distinguishable without colour.
-- `chartYScale(range: .plotDimension(endPadding: 8))` keeps 8 points of the plot area's height free at the top, so the highest points and their symbols are not drawn against the edge.
+- `chartYScale(range: .plotDimension(endPadding: 8))` keeps 8 points of the plot area's height free at the top (rendered with 40), so the highest points and their symbols are not drawn against the edge.
 - `chartYAxis(.hidden)` and `chartLegend(.hidden)` remove chrome for a compact size; label the series some other way (see `compact.md`).
 
 ## Accessibility
 
-By default each date is one element giving the first series' value to the last's ("150 to 145, 2 Stores"; "2 series" if the stores also set the symbol), and more than a few dates are merged into ranges. Wrap each point's mark in a `Plot` labelled with the store and the written-out date, or describe a stretch per plot on a long series. The target rule is its own element and is labelled directly, as the recipe does. Name each series in the chart descriptor (`../accessibility.md`, `../audio-graph.md`).
+This recipe tells the lines apart only by `series:` and fixed colours, so by default they are read as one line: stretches of dates pooling both stores ("152 to 202, increases consistently, 4 values"), and one unnamed Audio Graph series of every point. No store is named or counted (read on iOS). The styled version's encodings give each date the first store's value to the last's and "2 series", since colour and symbol share the field (`../accessibility-defaults.md`). Wrap each point's mark in a `Plot` labelled with the store and the written-out date, or describe a stretch per plot on a long series. The target rule is its own element and is labelled directly, as the recipe does. Name each series in the chart descriptor (`../accessibility.md`, `../audio-graph.md`).
 
 ## Pitfalls
 

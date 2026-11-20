@@ -164,7 +164,7 @@ struct BeeswarmRecipe: View {
 
 ## Accessibility
 
-Points on two number axes are merged into ranges of x ("4 to 5, varies between 7.2 and 3.65, 17 values"). Wrap each point in a labelled `Plot` when the individual points matter, as the beeswarm does. A one-axis strip has no automatic Audio Graph (`../accessibility.md`, `../audio-graph.md`).
+By default the points are merged into stretches of the x axis, each read as the values it reaches and its group, the name doubled because colour and symbol share the field: "2 to 3", "varies between 8.3 and 6.8, Sumatra, Sumatra, 11 values". A stretch holding two groups ends "2 series" (read on iOS; `../accessibility-defaults.md`). Wrap each point in a labelled `Plot` when the individual points matter, as the beeswarm does. A one-axis strip has no elements at all and no automatic Audio Graph (`../accessibility.md`, `../audio-graph.md`).
 
 ## Pitfalls
 

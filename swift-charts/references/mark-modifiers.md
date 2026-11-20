@@ -8,9 +8,9 @@ The modifiers every mark shares. They come from the `ChartContent` protocol, beh
 
 **Use for:** painting a mark with a fixed colour, gradient or other `ShapeStyle`.
 
-**Do not use the hierarchical styles on marks or axis marks.** `.primary` draws in the chart's blue, and `.secondary`, `.tertiary` and `.quaternary` in paler tints of it, not in black and greys. Use a colour: `Color.primary`, `Color.secondary` or `.gray`, with an opacity for lighter shades. This applies to marks and axis marks; text and shapes in ordinary SwiftUI views, including the views inside an annotation, take `.secondary` as usual.
+**Do not use the hierarchical styles on marks or axis marks.** `.primary` draws in the chart's blue, and `.secondary`, `.tertiary` and `.quaternary` in paler tints of it, not in black and greys (rendered on bars). Use a colour: `Color.primary`, `Color.secondary` or `.gray`, with an opacity for lighter shades. This applies to marks and axis marks; text and shapes in ordinary SwiftUI views, including the views inside an annotation, take `.secondary` as usual.
 
-A `foregroundStyle` applied to the `Chart` view itself colours every mark that has no style of its own, which is the shortest way to tint a single-series chart. `tint(_:)` does not do it: unstyled marks stay blue.
+A `foregroundStyle` applied to the `Chart` view itself colours every mark that has no style of its own (rendered), which is the shortest way to tint a single-series chart. `tint(_:)` does not do it: unstyled marks stay blue.
 
 **Prefer `foregroundStyle(by:)`** when the colour stands for a data value. Use the fixed form for a single series, for a mark that is not data (a threshold rule), and for emphasising one element by a condition:
 
@@ -38,7 +38,7 @@ The `StrokeStyle` you pass replaces the mark's default line width and line cap, 
 | Modifier | iOS | Does |
 |---|---|---|
 | `opacity(_:)` | 16.0 | Fades a mark. Used to de-emphasise all but one element, or to keep overlapping marks visible. The legend's swatches stay at full strength |
-| `cornerRadius(_:style:)` | 16.0 | Rounds bars, rectangles and sectors. A bar's free end already has a slight rounding without it. A bar rising from the baseline is rounded at its free end only; on a stack, only the top segment's free end |
+| `cornerRadius(_:style:)` | 16.0 | Rounds bars, rectangles and sectors. A bar's free end already has a slight rounding without it (seen in renders, about 1 to 2 points). A bar rising from the baseline is rounded at its free end only; on a stack, only the top segment's free end |
 | `interpolationMethod(_:)` | 16.0 | How line and area marks connect their points, for example `.catmullRom` or `.stepEnd` |
 | `blur(radius:)` | 16.4 | Gaussian blur |
 | `shadow(color:radius:x:y:)` | 16.4 | Drop shadow |
@@ -127,7 +127,7 @@ Recipe: `gallery/grouped-bar.md`.
 
 **Use for:** giving each series its own point shape. On a `LineMark` it adds a marker at every point and separates the series (`composition.md`, *Series*).
 
-The value must be categorical, such as a `String`. Use it with `foregroundStyle(by:)` on the same property so series differ by both colour and shape. Choose the shapes with `chartSymbolScale` (`scales.md`).
+Pass a categorical value, such as a `String`: a number compiles, but in a render every point got the same circle and there was no legend. Use it with `foregroundStyle(by:)` on the same property so series differ by both colour and shape. Choose the shapes with `chartSymbolScale` (`scales.md`).
 
 ### `symbolSize(by:)` - iOS 16.0+
 
@@ -174,7 +174,7 @@ Chart {
 
 ### `zIndex` - iOS 17.0+
 
-**Use for:** controlling which of two overlapping marks is in front. The default is 0; a negative value puts a mark behind the rest, wherever it is written in the chart. Marks with the same value keep their written order, later in front. A negative value also puts the mark behind the grid lines, which then draw across it: fine for a selection rule, wrong for a bar, so to send one series of bars back raise the other instead. Example: `gallery/selection-line.md`.
+**Use for:** controlling which of two overlapping marks is in front. The default is 0 (a render with values of ±0.001 against marks with none); a negative value puts a mark behind the rest, wherever it is written in the chart. Marks with the same value keep their written order, later in front. A negative value also puts the mark behind the grid lines, which then draw across it: fine for a selection rule, wrong for a bar, so to send one series of bars back raise the other instead. Example: `gallery/selection-line.md`.
 
 ## Masking and clipping
 

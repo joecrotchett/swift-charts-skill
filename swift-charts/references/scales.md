@@ -29,7 +29,7 @@ func percentScale() -> some View {
 }
 ```
 
-A closed range (`0 ... 100`) or a two-element array (`[0, 100]`) both work for numbers and dates. For a category scale, an array of the categories sets their order and can include categories the data lacks. It reorders the rows without touching the data, so VoiceOver still walks the marks in data order; to rank bars, sort the data instead (`gallery/bar.md`), and keep the domain array for a fixed order or for categories with no data:
+A closed range (`0 ... 100`) or a two-element array (`[0, 100]`) both work for numbers and dates: the array is read as the minimum and maximum (rendered). For a category scale, an array of the categories sets their order and can include categories the data lacks. It reorders the rows without touching the data, so VoiceOver still walks the marks in data order; to rank bars, sort the data instead (`gallery/bar.md`), and keep the domain array for a fixed order or for categories with no data:
 
 <!-- snippet: Scales/ScaleSnippets.swift#category-domain -->
 ```swift
@@ -40,7 +40,7 @@ func drinksInMenuOrder() -> some View {
 
 **An adjusted automatic domain** when the data should still decide the extent:
 
-- Number scales include zero by default, for every mark type, so that changing the mark never changes the scale. Bars need the zero baseline. Points and lines often do not: turn it off when zero is not meaningful and the data sits far from it. On bars `includesZero: false` has no effect: a bar's own start at zero stays in the domain. Only an exact domain that leaves zero out cuts a bar short. `.automatic` alone is the same as leaving the modifier out.
+- Number scales include zero by default, for every mark type, so that changing the mark never changes the scale. Bars need the zero baseline. Points and lines often do not: turn it off when zero is not meaningful and the data sits far from it. On a bar's value axis `includesZero: false` has no effect: a bar's own start at zero stays in the domain. On the other axis it works, as on a histogram's bins (`gallery/histogram.md`). Only an exact domain that leaves zero out cuts a bar short. `.automatic` alone is the same as leaving the modifier out.
 
 <!-- snippet: Scales/ScaleSnippets.swift#nozero -->
 ```swift
@@ -136,7 +136,7 @@ A `by:` encoding on a mark (`mark-modifiers.md`) creates one of these scales.
 
 Its forms:
 
-- A dictionary literal from value to style: `.chartForegroundStyleScale(["Small": .yellow, "Large": .brown])`. The written order becomes the legend order.
+- A dictionary literal from value to style: `.chartForegroundStyleScale(["Small": .yellow, "Large": .brown])`. The written order becomes the legend order (rendered, with data in a different order).
 - A closure from value to style, when the mapping lives elsewhere: `.chartForegroundStyleScale { colorFor($0) }`. It must return a style for every value in the data: give it a non-optional fallback, and do not force-unwrap a dictionary lookup.
 - A `Gradient` as the range, when the encoded value is a number: `.chartForegroundStyleScale(range: Gradient(colors: [.yellow, .red]))`. Example: `gallery/heat-map.md`. Without a domain the ramp's ends are rounded outward past the data (values from -305 to 212 gave a ramp from -500 to 250), so no mark is drawn in either end colour.
 - A number range as the `domain:` with a `Gradient`, to fix where the ramp's colours fall. For values that cross zero, a domain even about zero and three colours put zero on the middle one: `.chartForegroundStyleScale(domain: -305 ... 305, range: Gradient(colors: [.orange, Color(.systemGray3), .blue]))`. The automatic legend still labels rounded ends and draws the end colours flat past the domain (160 to 260 was keyed 150 to 300, 20 to 60 as 0 to 75; seen on iOS), so its darkest colour falls short of its top label: choose round ends, or draw your own key labelled at the domain's ends with `chartLegend(position:alignment:content:)`.

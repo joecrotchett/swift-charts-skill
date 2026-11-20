@@ -29,6 +29,10 @@ struct CandlestickMark<X: Plottable, Y: Plottable>: ChartContent {
     var body: some ChartContent {
         // The Plot makes the two marks one unit, so a label given to a candle describes the whole candle.
         Plot {
+            // A clear band the full height of the plot, so VoiceOver reads the candles along x and not
+            // highest wick first. Clear is the only style the type sets; opacity(0) does not do it.
+            RectangleMark(x: x, width: .ratio(0.6))
+                .foregroundStyle(.clear)
             RuleMark(x: x, yStart: low, yEnd: high)
                 .lineStyle(StrokeStyle(lineWidth: 1))
             RectangleMark(x: x, yStart: open, yEnd: close, width: .ratio(0.6))
@@ -69,7 +73,7 @@ struct CandlestickChartRecipe: View {
         .chartForegroundStyleScale(["Closed higher": Color.blue, "Closed lower": Color.orange])
         // Prices sit far from zero; without a domain that leaves zero out the candles are squashed at the top.
         .chartYScale(domain: priceAxis)
-        // A candlestick gets no Audio Graph of its own.
+        // A candlestick has no Audio Graph of its own (read on iOS): give it one.
         .accessibilityChartDescriptor(CandleDescriptor(prices: prices, priceAxis: priceAxis))
     }
 }

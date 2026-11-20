@@ -9,7 +9,7 @@ The legend explains the colour, symbol and other non-position scales. It appears
 - `chartLegend(.hidden)` when the chart is compact or the series are labelled some other way. Something else must then identify the series, such as each line's name at its end (an `annotation` on the last point, `annotations.md`).
 - `chartLegend(position:alignment:spacing:)` to move or align it, for example `chartLegend(alignment: .center, spacing: 18)` under a donut.
 
-By default the legend sits below the chart at the leading edge, with a circle swatch per entry, or the series' own symbol when `symbol(by:)` is used. Two encodings of the same field, such as `foregroundStyle(by:)` and `lineStyle(by:)` on the café, make one entry per value, its swatch drawn in both (a dashed green line).
+By default the legend sits below the chart at the leading edge, with a circle swatch per entry, or the series' own symbol, filled, when `symbol(by:)` is used (rendered). Two encodings of the same field, such as `foregroundStyle(by:)` and `lineStyle(by:)` on the café, make one entry per value, its swatch drawn in both (a dashed green line).
 
 `alignment:` works along the side the legend is on: horizontal above or below the chart (`.leading`, `.center`, `.trailing`), vertical beside it (`.top`, `.center`, `.bottom`). A legend beside the chart takes its width from the plot, which matters at large text sizes.
 
@@ -19,7 +19,7 @@ Examples: `gallery/donut.md`, `gallery/compact.md`.
 
 ### A legend of your own
 
-When the design's legend cannot be produced by `chartLegend` (a different layout, values beside the names, a legend inside the plot), hide the automatic one and draw it yourself. `chartLegend(position:alignment:spacing:content:)` puts a view of your own in the legend's place instead, when only the content differs and the position is one the legend already offers. Its text draws in blue unless given a colour (`.tint` did not change it, iOS), and VoiceOver reads it. From iOS 16.4 the `ChartProxy` gives the scale's values and the colour the chart assigned to each, so the legend follows the colours. Its order may not: `foregroundStyleDomain` lists the values in the colour scale's domain order, not the data's, so sort the data the same way if the legend must match a stack; and with an automatic colour scale, reordering the data recoloured the marks and the framework's legend while `foregroundStyleDomain` kept the old order (iOS). With an automatic scale, take only the palette from the proxy and work out the order yourself, or state the domain:
+When the design's legend cannot be produced by `chartLegend` (a different layout, values beside the names, a legend inside the plot), hide the automatic one and draw it yourself. `chartLegend(position:alignment:spacing:content:)` puts a view of your own in the legend's place instead, when only the content differs and the position is one the legend already offers. Its text draws in blue whatever the tint, and `.secondary` gives a light blue (iOS): give it an explicit colour such as `Color.primary` or `Color.secondary`. VoiceOver reads it. From iOS 16.4 the `ChartProxy` gives the scale's values and the colour the chart assigned to each, so the legend follows the colours. Its order may not: `foregroundStyleDomain` lists the values in the colour scale's domain order, not the data's, so sort the data the same way if the legend must match a stack; and with an automatic colour scale, reordering the data recoloured the marks and the framework's legend while `foregroundStyleDomain` kept the old order (iOS). With an automatic scale, take only the palette from the proxy and work out the order yourself, or state the domain:
 
 <!-- snippet: Interaction/ProxySnippets.swift#custom-legend -->
 ```swift
@@ -51,6 +51,8 @@ struct ChartWithOwnLegend: View {
     }
 }
 ```
+
+**A number encoded as colour** gets a gradient strip with numbers under it, at round values that need not be the domain's ends: with the domain fixed at 160 ... 260 the strip was labelled 150, 200, 250 and 300, and an automatic scale over values from 6 to 80 ran from 0. Those numbers are not thinned at large text: they collided at `.accessibility3` (iOS render). A key of your own in `chartLegend(position:alignment:spacing:content:)`, a strip labelled with the domain's two ends and given a text colour, stayed readable at `.accessibility5`; fix the scale's domain so the key's ends are the colours' ends (code in `gallery/heat-map.md`).
 
 A legend overlaid on the plot covers the marks under it; keep room for it with the scale's range, `chartXScale(range: .plotDimension(endPadding: width))` beside the marks, measured from the legend, or above them with the y scale at the largest text sizes.
 

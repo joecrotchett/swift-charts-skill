@@ -72,7 +72,7 @@ struct ParametricPlot: View {
 }
 ```
 
-**End labels.** On a number axis the label at the trailing edge sits after its grid line and is dropped, so the recipe above draws no 6 (`axes.md`). `AxisMarks(preset: .aligned)` brings it inside; with axes centred on zero the leading label (-6) can then overhang, so give the scale a margin in data units (the window plus a few percent). Do not pad the range in points on a chart with true proportions: on iOS that gave 19.8 points per unit on x against 17.3 on y. A function plot also keeps drawing into any range padding, past its domain.
+**End labels.** On a number axis the label at the trailing edge sits after its grid line and is dropped: the trace variation below runs from -10 to 10 and draws a grid line at 10 with no label (`axes.md`). `AxisMarks(preset: .aligned)` brings it inside; with axes centred on zero the leading label (-6) can then overhang, so give the scale a margin in data units (the window plus a few percent). Do not pad the range in points on a chart with true proportions: on iOS that gave 19.8 points per unit on x against 17.3 on y. A function plot also keeps drawing into any range padding, past its domain.
 
 **True proportions and axes through the origin.** An `aspectRatio` on the plot area makes one unit the same length on both axes; two `RuleMark`s at zero draw the axes mathematicians expect.
 
@@ -137,6 +137,6 @@ struct TraceableFunctionPlot: View {
 }
 ```
 
-**Drawing the curve in.** Give the plot a `domain:` (a `ClosedRange<Double>?`) whose upper bound grows over time, for example from a `TimelineView(.animation(paused:))` that is paused once the curve is whole; the curve is drawn only as far as the domain reaches (seen on iOS). Keep both scale domains fixed, so nothing rescales while it grows. Under Reduce Motion (`accessibilityReduceMotion`) show the curve whole. Give the accessibility representation and the chart descriptor the whole curve, or only its finished stretches, not an element whose text changes every frame.
+**Drawing the curve in.** Give the plot a `domain:` (a `ClosedRange<Double>?`) whose upper bound grows over time, for example from a `TimelineView(.animation(paused:))` that is paused once the curve is whole; the curve is drawn only as far as the domain reaches (seen on iOS). Keep both scale domains fixed, so nothing rescales while it grows. Under Reduce Motion (`accessibilityReduceMotion`) show the curve whole. Build the chart descriptor from the whole curve: one built from the stretch drawn so far described 35 of 60 minutes, and that was what the Audio Graph kept (`../audio-graph.md`). Give the accessibility representation the whole curve, or only its finished stretches, not an element whose text changes every frame.
 
 Code for the other variations, and the pitfalls, are in `../vectorized-plots.md`.

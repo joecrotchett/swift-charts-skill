@@ -69,7 +69,7 @@ The mistakes a reviewer would catch in chart code. Run every section that applie
 - A custom gesture on iOS 17+ drives the chart's selection through the proxy instead of keeping a parallel state. (`interaction.md`)
 - A chart in a vertical scroll view still lets a swipe that starts on it scroll the page: no plain drag gesture in its overlay. (`interaction.md`)
 - No control outside the chart acts only on a live touch selection, which ends when the finger lifts. (`interaction.md`)
-- A headline that follows the selection or the scroll position keeps one height, the longest it can show in the current locale, and no text above the chart gains or loses a row with the selection, so the chart does not move under the finger. (`gallery/selection-line.md`, `design.md`)
+- A headline that follows the selection or the scroll position keeps one height, the longest it can show in the current locale, and no text above the chart gains or loses a row with the selection, so the chart does not move under the finger. A headline only a control changes reserves nothing. (`gallery/selection-line.md`, `design.md`)
 - A fixed overlay on a scrolling chart uses `plotContainerFrame`. (`plot-area.md`)
 - A scrolling chart comes to rest on meaningful values with `.valueAligned`: `matching:` for dates (midnight for daily bars), `unit:` for numbers. (`interaction.md`)
 - A sector selection is mapped through cumulative ranges. (`interaction.md`)
@@ -83,7 +83,7 @@ Judgement first, then the specifics.
 - The chart was designed from a stated goal and shows the few things that goal needs, checked against real data including zeros, gaps and outliers. With no data, it shows a placeholder, not a blank space or an empty plot; so does a chart of only zeros whose marks grow from zero (bars, areas, sectors). Points at zero are real marks and are drawn, and so is a gauge's track, so 0% is a reading. (`design.md`)
 - The chart has a point, stated in a visible title or headline; data people only need to look up is in a list or table. (`design.md`)
 - The headline is true of the chart as drawn, and is still true when a control changes the chart. It names no mark that draws nothing: a bar of zero has no top and no colour. Every day and figure it names can be found on the chart at phone width: an axis label that is dropped, or a value between grid lines, is marked on the chart or left out; so is a superlative (tallest, busiest) within a few points of its rivals. (`design.md`, `axes.md`)
-- Every other sentence beside the chart (a note, an explanation) is true of the chart as it is now drawn, including when the device's own text size or layout direction, not a control, produced it. (`design.md`)
+- Every other sentence beside the chart (a note, an explanation) is true of the chart as it is now drawn, including when the device's own text size, layout direction or colour scheme, not a control, produced it: a shade called pale or deep is so in one appearance only. (`design.md`)
 - The mark matches what is being communicated: bars for comparison and totals, a line for change, points for relationships. (`design.md`)
 - Axis labels follow a familiar sequence. (`design.md`)
 - A 3D chart is justified by three-dimensional data and an app where rotating it is welcome; its initial pose shows the point. (`chart3d.md`)
@@ -98,7 +98,7 @@ Judgement first, then the specifics.
 - An explicit colour scale is set wherever the automatic colours could contradict what the categories mean. (`scales.md`)
 - The colour scale is written in the same order as the data, so legend and stack agree. (`gallery/stacked-bar.md`)
 - A hidden legend or hidden axis is replaced by something that carries the same information. (`design.md`)
-- One element is emphasised at a time. (`design.md`)
+- One element is emphasised at a time, and the faded rest is still visible in Dark Mode. (`design.md`)
 - Category order is the same in every view of the same data. (`design.md`)
 - Unstacked areas have opacity so none is hidden. (`gallery/area.md`)
 - A gradient meant to show level uses `alignsMarkStylesWithPlotArea`. (`mark-modifiers.md`)
@@ -106,7 +106,7 @@ Judgement first, then the specifics.
 - A heat map sets cell width and height and moves the row labels outside the plot. (`gallery/heat-map.md`)
 - No more than seven series rely on the automatic colours or symbols; both repeat after seven. (`gallery/README.md`)
 - A pie or donut has a small `angularInset` and corner radius, not large ones. (`marks.md`)
-- The unit of every axis is stated once where the reader will see it: in the heading, in an axis title, or in the axis labels' format. So is what a size or opacity encoding shows: a size legend has no title and opacity has no legend (`scales.md`). There are no more axis labels than the reader needs, and values in the millions have an explicit format; the automatic one is scientific notation. (`design.md`, `axes.md`)
+- The unit of every axis is stated once where the reader will see it: in the heading, in an axis title, or in the axis labels' format. So is what a size or opacity encoding shows: a size legend has no title and opacity has no legend (`scales.md`). There are no more axis labels than the reader needs, and values in the millions have an explicit format; the automatic one switches to scientific notation ("3.0E6") once the axis passes about 2,000,000. (`design.md`, `axes.md`)
 - Category labels fit: none are truncated to an ellipsis at the smallest supported width. (`axes.md`)
 - Custom axis labels are checked at phone width. (`gallery/custom-axes.md`)
 - `centered:` is true on a date axis label only when there is an axis mark at every unit (labels may still be left out on some); with a longer stride it puts the label mid-stride. (`axes.md`)
@@ -120,7 +120,7 @@ Elements:
 - Each accessibility element covers what the chart's purpose calls for: a mark, a portion, or the whole chart. (`accessibility.md`)
 - No axis or tick label is made an element of its own: values come from the marks and the Audio Graph. (`accessibility.md`)
 - Labels and values are on a `Plot` around the mark or marks, not on a bare mark that can share its element; a rule across the plot is its own element and is labelled directly, or through a labelled `Plot` around it. (`accessibility.md`)
-- A control that changes element text or the chart descriptor without changing the data's ids gives the chart a new identity built from every such state (`.id(state)`), or VoiceOver and the Audio Graph keep the old ones. (`accessibility.md`)
+- A control that changes the chart descriptor without changing the data's ids gives the chart a new identity built from every state the descriptor reads (`.id(state)`), or the Audio Graph keeps the old one; labels on `Plot`s update without it. (`accessibility.md`)
 - A custom `ChartContent` made of several marks wraps the ones carrying data in one `Plot`; marks that are only decoration (axis lines, a frame) are hidden. (`accessibility.md`)
 - A legend that changes with state is one `chartLegend` chain given a `Visibility`, not a conditional modifier around the chart. (`legend.md`)
 - A view placed from the `ChartProxy` lands on the right mark in right to left, and an overlay that draws from `plotFrame` is clipped. (`plot-area.md`)
@@ -135,7 +135,7 @@ Elements:
 
 Audio Graph:
 
-- The chart has a chart descriptor with a title, a summary in actual values, units in its value descriptions, written-out dates, and a name for every series; a compact preview that is one element is the exception. (`audio-graph.md`, `accessibility.md`)
+- The chart has a chart descriptor with a title, a summary in actual values, units in its value descriptions, written-out dates, and a name for every series, describing the whole chart whatever an animation has drawn so far; a compact preview that is one element is the exception. It sits inside an `accessibilityRepresentation`, or after it, never before. (`audio-graph.md`, `accessibility.md`)
 - The descriptor's `isContinuous` is true only for a connected line or area over an ordered x; separate totals, a bar per day included, are false, its value descriptions and summary agree in number ("1 cup") through the inflected form, not a hand-written test, and its value range matches the drawn scale, one explicit domain passed to both. (`audio-graph.md`)
 
 Beyond VoiceOver:

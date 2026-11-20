@@ -48,7 +48,7 @@ Load only the references the task needs.
 1. For a known form, start from its recipe (`references/gallery/README.md`). Shape the data (`references/data.md`), then choose and compose marks (`references/marks.md`, `references/composition.md`), configure them (`references/mark-configuration.md`) and style them (`references/mark-modifiers.md`).
 2. Configure scales (`references/scales.md`), axes (`references/axes.md`), legend (`references/legend.md`) and plot area (`references/plot-area.md`) where the design differs from the defaults, and check every axis's labels at phone width and the largest text size (`references/axes.md`, *`AxisValueLabel`*).
 3. Add annotations (`references/annotations.md`) and interaction (`references/interaction.md`) if required, a visible title or headline saying what the chart shows (`references/design.md`, *Descriptions*), and a placeholder for when there is no data.
-4. For large data sets, draw fewer points: bin or aggregate; a plot (iOS 18+) suits a large uniform collection, but measured no faster than marks (`references/vectorized-plots.md`).
+4. For large data sets, draw fewer points: bin or aggregate. A plot (iOS 18+) suits a large uniform collection; Apple presents it as the more efficient route, while one offscreen timing on the simulator here found a `PointPlot` no faster than the same marks, so promise neither (`references/vectorized-plots.md`).
 5. Apply `references/accessibility.md`, `references/accessibility-beyond-voiceover.md`, `references/audio-graph.md` and `references/review-checklist.md`.
 
 ### Diagnose a chart that looks or behaves wrong

@@ -55,5 +55,5 @@ struct PopulationPyramidRecipe: View {
 
 ## Accessibility
 
-The two bars of a row share one accessibility element, whose automatic value is their sum with one side negative ("65+, total -60, 2 Periods"), and values set on the bars are not read. The recipe wraps each bar in a `Plot` labelled with the real number (`../accessibility.md`, *One element per `Plot`*).
+The two bars of a row share one accessibility element, whose automatic value is their total, with one side counted negative, and a count of the periods ("Under 18", "total -130, 2 Periods", read on iOS), and values set on the bars are not read. The recipe wraps each bar in a `Plot` labelled with the real number (`../accessibility.md`, *One element per `Plot`*).
 

@@ -102,7 +102,7 @@ Chart(months) { month in
 
 ## Accessibility
 
-Stacked areas are read per date as the span across the bands ("varies between 300 and 150, 3 Drinks"); wrap each point's mark in a labelled `Plot`, or a stretch per plot. Where a line is drawn over an area of the same data, hide the area, as the gradient recipe does, or every value is counted twice (`../accessibility.md`).
+By default stacked areas give one element per x value, labelled with its range (a month as "Jan 1, 2027 to Feb 1, 2027", in the device's time zone) and valued with the highest and lowest single series there, not the stacked heights: "varies between 512 and 244, 3 Drinks". The automatic Audio Graph has one continuous series per colour with the unstacked values (read on iOS). Wrap each point's mark in a labelled `Plot`, or a stretch per plot. Where a line is drawn over an area of the same data, hide the area, as the gradient recipe does, or every value is counted twice (`../accessibility.md`).
 
 ## Pitfalls
 

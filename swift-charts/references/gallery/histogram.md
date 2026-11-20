@@ -1,6 +1,6 @@
 # Histogram
 
-![Ten touching bars of varying height over a number axis from 2 to 8, with a count axis.](../../assets/gallery/histogram.png)
+![Ten bars of varying height a hairline apart, after two empty bins, over a number axis from 2 to 8, with a count axis.](../../assets/gallery/histogram.png)
 
 ## Visual signature
 
@@ -44,7 +44,7 @@ struct HistogramRecipe: View {
 
 **Totals per period:** `DateBins` in place of `NumberBins`, and a sum in place of a count (`../data.md`).
 
-**With a fitted curve** (iOS 18.0+). A function `LinePlot` over the bars, scaled by the bin width so its area matches theirs: a bar's share is the density times the width (for counts, times the count as well). Do not scale it so its peak meets the tallest bar; that forces an agreement the data may not have. Let the y domain hold the curve's peak too. Over bars, the curve's own element is read in the order of its frame's top, not along x: give VoiceOver full-height stretches per bin that carry both values (`vectorized-plots.md`, *Accessibility*).
+**With a fitted curve** (iOS 18.0+). A function `LinePlot` over the bars, scaled by the bin width so its area matches theirs: a bar's share is the density times the width (for counts, times the count as well). Do not scale it so its peak meets the tallest bar; that forces an agreement the data may not have. Check that the y domain holds the curve's peak, and set it if it does not (the automatic one does here). Over bars, the curve's own element is read in the order of its frame's top, not along x: give VoiceOver full-height stretches per bin that carry both values (`../vectorized-plots.md`, *Accessibility*).
 
 ![Translucent histogram bars with a smooth bell curve drawn over them.](../../assets/gallery/histogram-curve.png)
 

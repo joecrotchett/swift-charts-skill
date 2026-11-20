@@ -1,6 +1,6 @@
 # Calendar heat map
 
-![Two months of rounded square tiles in seven columns under weekday names, each tile shaded from light to dark blue and numbered with its day; the first of each month carries the month's name.](../../assets/gallery/calendar.png)
+![Two months of rounded square tiles in seven columns under weekday names, each tile shaded from mid to dark blue and numbered with its day; the first of each month carries the month's name.](../../assets/gallery/calendar.png)
 
 ## Visual signature
 
@@ -119,7 +119,7 @@ Pass the calendar the app uses; its first weekday decides which day is the first
 
 Without help every weekday column is one element summarising all its days. The recipe replaces the plot area's elements with a grid of squares laid out like the tiles, one per day, labelled with the full date and the value, and marks each first of the month as a heading (`../accessibility.md`, *When the elements should not follow the marks*). Without the headings, a labelled `Plot` around each tile does the same job in less code.
 
-This form gets no automatic Audio Graph. Attach a chart descriptor of the daily values (`../audio-graph.md`).
+A calendar grid has no automatic Audio Graph (read on iOS). Attach a chart descriptor of the daily values (`../audio-graph.md`).
 
 ## Pitfalls
 

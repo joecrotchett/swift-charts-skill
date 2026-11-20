@@ -9,7 +9,7 @@ Bars arranged in clusters: each category on the axis holds several narrower bars
 ## Composition
 
 - The same data and `BarMark` as a stacked bar chart, minimum iOS 16.0.
-- `foregroundStyle(by:)` colours the bars; on its own it would stack them.
+- `foregroundStyle(by:)` colours the bars. Bars that share a position stack with or without it (`../composition.md`).
 - `position(by:axis:)` on the same property places them side by side within the category's band instead.
 
 <!-- snippet: Gallery/GroupedBarChart.swift#chart -->

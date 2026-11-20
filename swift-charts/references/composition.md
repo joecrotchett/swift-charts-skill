@@ -6,7 +6,7 @@ How a chart is put together: the framework's model, what it does for you, the `C
 
 A chart is built from four kinds of building block: **marks** (the shapes that represent data), **scales** (how data values become positions, colours and sizes), **axes** and **legends** (which explain the scales). You write the marks. The framework generates scales, axes and a legend that fit the data, and you override them with chart modifiers only where the design differs from the default.
 
-A mark represents data through its **mark properties**: x, y, foreground style, symbol, symbol size and line style. Plotting a data value with a property (`x: .value(...)`, `foregroundStyle(by: .value(...))`) creates the scale for it. There is no prebuilt component per chart type. Changing the form is usually changing the mark: `BarMark` to `LineMark` to `PointMark`, with everything else left alone.
+A mark represents data through its **mark properties**: x and y, and the properties with a `by:` encoding, foreground style, symbol, symbol size and line style. Plotting a data value with a property (`x: .value(...)`, `foregroundStyle(by: .value(...))`) creates the scale for it. There is no prebuilt component per chart type. Changing the form is usually changing the mark: `BarMark` to `LineMark` to `PointMark`, with everything else left alone.
 
 The plot area, where the marks are drawn, can be customised like the axes and the legend (`axes.md`, `legend.md`, `plot-area.md`).
 
@@ -71,7 +71,7 @@ The first two wrap the data in an implicit `ForEach`. `Chart { }` takes any mix 
 
 Examples: `gallery/bar.md` (data initializer), `gallery/multi-series-line.md` (content initializer).
 
-**Pitfalls:** reaching for `Chart(data)` and then needing a second series or a `RuleMark` beside it. A rule written inside that closure is created once per element: it draws as one line, heavier than intended when its colour is translucent, and is announced once for every element. Start with `Chart { ForEach(data) { ... } }` when the design has anything other than one mark per element.
+**Pitfalls:** reaching for `Chart(data)` and then needing a second series or a `RuleMark` beside it. A rule written inside that closure is created once per element: the copies draw as one line, heavier than intended when its colour is translucent (rendered: four copies of a 30% red rule drew solid red), and each copy is an accessibility element: four drinks gave four identical rule elements, one when the rule was written once (read on iOS). Start with `Chart { ForEach(data) { ... } }` when the design has anything other than one mark per element.
 
 ### `ChartContent` - iOS 16.0+
 

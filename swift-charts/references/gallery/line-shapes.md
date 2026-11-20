@@ -9,7 +9,7 @@ How a line travels between its points identifies the interpolation method:
 | ![A line of straight segments joining seven circled points.](../../assets/gallery/line-linear.png) | ![A smooth curve passing through the same seven points.](../../assets/gallery/line-smooth.png) | ![A stepped line holding each point's level until the next point.](../../assets/gallery/line-step.png) |
 | `.linear`, the default | `.catmullRom` (also `.cardinal`, `.monotone`) | `.stepEnd` (also `.stepStart`, `.stepCenter`) |
 
-In a stepped line, look at where the jump happens relative to the points: at the following point (`.stepEnd`), at the point itself (`.stepStart`), or midway (`.stepCenter`).
+In a stepped line, look at where the jump happens relative to the points: at the following point (`.stepEnd`), at the point itself (`.stepStart`), or midway (`.stepCenter`). Apple's documentation words it from the jump's side: under `.stepEnd` the point is "at the end of the step", the top of the jump into it (`../mark-configuration.md`).
 
 ## Composition
 

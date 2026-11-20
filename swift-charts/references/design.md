@@ -44,7 +44,7 @@ func quietAxes() -> some View {
 }
 ```
 
-- **In a narrow space, give the width to the plot.** Keep value labels short (`1M`, not `1,000,000`; `axes.md`, `AxisValueLabel`), move the unit into the chart's heading, and put long category names inside the plot area, which is where Swift Charts puts them by default on a horizontal bar chart.
+- **In a narrow space, give the width to the plot.** Keep value labels short (`1M`, not `1,000,000`; `axes.md`, `AxisValueLabel`), move the unit into the chart's heading, and put long category names inside the plot area, which is where Swift Charts puts them by default on a horizontal bar chart (rendered on iOS).
 - **Keep a clean leading edge** so the chart lines up with the views around it. The defaults already do this: the value axis is on the trailing side, and each time label sits on the trailing side of its grid line. Moving the value axis to the leading edge gives that up; do it only when the design calls for it.
 
 ## Descriptions
@@ -61,12 +61,12 @@ func quietAxes() -> some View {
 
 - **Prefer a heading to an axis title for saying what is measured.** An axis title is small and off to the side; a heading puts the meaning front and centre. Add an axis title (`axes.md`) when the heading cannot carry the unit, or when the two axes need telling apart, as on a scatter plot. Context can also come from the interface around the chart: the screen's title, the label of a period switch.
 - **Words that name a direction** ("left to right", "on the right") are false in a right-to-left layout, where the chart mirrors. Read `layoutDirection`, or write "in order" and "before" instead.
-- **A headline is true of what is drawn.** When a control changes the chart, the headline is worked out again from what the chart now shows. It speaks only of marks that are drawn: a bar of zero has no top and no colour, so leave it out of a sentence about either; and a superlative (tallest, busiest) within a few points of its rivals is marked on the chart or left out. The same holds for any note beside the chart: base it on what is in effect (the text size and layout direction the chart is drawn in), not on a control's setting.
+- **A headline is true of what is drawn.** When a control changes the chart, the headline is worked out again from what the chart now shows. It speaks only of marks that are drawn: a bar of zero has no top and no colour, so leave it out of a sentence about either; and a superlative (tallest, busiest) within a few points of its rivals is marked on the chart or left out. The same holds for any note beside the chart: base it on what is in effect (the text size, layout direction and colour scheme the chart is drawn in), not on a control's setting. A sentence that calls a shade pale or deep is true in one appearance: the default ramp runs pale to deep blue in Light Mode and near-black to bright in Dark Mode, where "the palest" bar was the darkest. Read `colorScheme` and word it from what is drawn, or name the ramp's ends by value.
 - **A headline is not an accessibility label.** It is what a VoiceOver user meets first, and it helps; the labels and the descriptor still have to be written (`accessibility.md`).
-- **Label directly where possible.** A value written on a rule, or a name and value in the centre of a donut, is read faster than a legend lookup (`annotations.md`). Hide the legend when direct labels make it redundant.
+- **Label directly where possible.** A value written on a rule, or a name and value in the centre of a donut, saves the reader a trip to the legend (`annotations.md`). Hide the legend when direct labels make it redundant.
 - **Establish a hierarchy: the data first.** Marks are the most prominent thing; descriptions and axes support them without competing. Secondary text styles and light grid lines keep that order.
 
-The pattern Apple's own apps use for a chart with its summary is a caption, a large figure with its unit, the period covered, then the chart:
+This skill's pattern for a chart with its summary is a caption, a large figure with its unit, the period covered, then the chart:
 
 ![The caption AVERAGE, a bold 167 cups, the dates Mar 1 to 7, 2026, and a bar chart of seven days with its value axis.](../assets/gallery/summary-card.png)
 
@@ -86,9 +86,12 @@ struct SummaryCard: View {
             Text("AVERAGE")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            // Two styles in one line: a Text inside a Text (`+` is deprecated from iOS 26).
-            // foregroundColor keeps the unit a Text on iOS 16; from iOS 17 foregroundStyle does too.
-            Text("\(Text(average, format: .number).font(.title.bold())) \(Text("cups").font(.headline).foregroundColor(.secondary))")
+            // Two styles on one baseline, combined into one accessibility element.
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(average, format: .number).font(.title.bold())
+                Text("cups").font(.headline).foregroundStyle(.secondary)
+            }
+            .accessibilityElement(children: .combine)
             if let first = days.first?.day, let last = days.last?.day {
                 // Formatted to a string in the data's time zone; Text(range, format:) would use the device's.
                 Text((first ..< last).formatted(
@@ -115,7 +118,7 @@ struct SummaryCard: View {
 
 ## Colour
 
-- **Never rely on colour alone** to tell data apart or to carry essential information. Add a second difference: symbol shape for points and lines (`symbol(by:)`), dash pattern for lines (`lineStyle(by:)`), or direct labels. Bars have no shape or dash, so their second cue is a direct label on each bar or segment (`gallery/stacked-bar.md`). For example, one measure as red circles and the other as black diamonds. Check by rendering the chart with `.grayscale(1)`: the series must still differ. The check is honest only with colours of similar lightness; the first two automatic colours, blue and green, are not (purple and red are).
+- **Never rely on colour alone** to tell data apart or to carry essential information. Add a second difference: symbol shape for points and lines (`symbol(by:)`), dash pattern for lines (`lineStyle(by:)`), or direct labels. Bars have no shape or dash, so their second cue is a direct label on each bar or segment (`gallery/stacked-bar.md`). For example, Health draws the two parts of blood pressure in red and black, or red and white, with a different point shape for each (HIG). Check by rendering the chart with `.grayscale(1)`: the series must still differ. The check is honest only with colours of similar lightness; the first two automatic colours, blue and green, are not (Rec. 709 luma 116 against 160, measured in a render; purple and red are).
 
 <!-- snippet: Design/HIGPatterns.swift#two-series-points -->
 ```swift
@@ -141,7 +144,7 @@ struct TwoSeriesPoints: View {
 }
 ```
 
-- **Emphasise one thing.** To draw the eye to one element, keep it at full strength and fade the rest (opacity around 0.3 of each mark's own, set on each mark: `opacity` on a `Plot` is ignored, read on iOS), or grey the supporting marks and colour the one that matters. When an overlay such as an average line is switched on, mute what is underneath so there is one focus at a time.
+- **Emphasise one thing.** To draw the eye to one element, keep it at full strength and fade the rest (this skill starts from an opacity around 0.3 of each mark's own in Light Mode; on a dark panel a blue at 0.3 went close to invisible, so check the fade in Dark Mode and give it per appearance or fade to grey; set it on each mark, since `opacity` on a `Plot` is ignored, read on iOS), or grey the supporting marks and colour the one that matters. When an overlay such as an average line is switched on, mute what is underneath so there is one focus at a time.
 - **Assign meaningful colours explicitly.** Automatic colours are assigned in order and mean nothing. When a category has a colour people already associate with it, set it; a mismatch (the bar for "green" drawn in pink) actively misleads (`scales.md`).
 - **Balance the visual weight of category colours.** A vivid colour beside a dark one makes its series look more important. Even out saturation and brightness unless a hierarchy is intended; when one series should stand out, a heavier colour is the tool. Measure weight as the grey `.grayscale(1)` gives each colour (measured on iOS: 0.2126R′ + 0.7152G′ + 0.0722B′ on the sRGB values, not WCAG luminance; a pair matched on luminance came out 5 greys apart). Weight depends on the background: a navy heavy on white measured 1.2:1 on the dark panel, so give each appearance its own colours where one fades. Equal greys remove the lightness cue colour-blind readers use: separate the hues too (a teal-leaning green against a brown), and check with a colour-blindness filter.
 - **Choose colours that are easy to name apart** (purple and green, not purple and purple-pink) and that contrast with the background.
@@ -159,7 +162,7 @@ struct TwoSeriesPoints: View {
 | Large | Most of the screen | Deep exploration: overlays, summaries, several controls |
 
 - **Reveal complexity progressively.** Put a small static chart high in the navigation and let people move to fuller versions as their interest grows.
-- **Overview and detail.** A compact chart in a list row opens a detail screen with the same data in a larger chart (around 240 points tall on iPhone for the whole chart, axes included, growing with the text) with axes and interaction. The overview pairs a caption, a headline stating the takeaway in words and numbers, and a small chart with axes and legend hidden (`gallery/compact.md`). Both charts take one explicit value domain, or their automatic ones differ and the bars change height when the detail opens. The headline above a detail chart reflects its current state: the visible range of a scrolling chart, or the selected element.
+- **Overview and detail.** A compact chart in a list row opens a detail screen with the same data in a larger chart, with axes and interaction, that grows with the text. The overview pairs a caption, a headline stating the takeaway in words and numbers, and a small chart with axes and legend hidden (`gallery/compact.md`). Both charts take one explicit value domain, or their automatic ones differ and the bars change height when the detail opens. The headline above a detail chart reflects its current state: the visible range of a scrolling chart, or the selected element.
 - **Keep continuity between charts of the same data.** The preview and the full version use the same chart type, colours, annotations and wording, so people recognise them as one thing. Someone who taps a chart wants more of what they saw: keep its shape and every number that was visible, and add to it.
 - **Be consistent across charts with a similar purpose.** One type and one style let people carry what they learned from one chart to the next. Differ only to signal a real difference, and make the difference as large as the change:
 
@@ -171,7 +174,7 @@ struct TwoSeriesPoints: View {
 
 The rows do not add up: change only what differs. The same data measured another way (a drink's cups, then its share) keeps its colour and changes its mark. Charts of the same measure share one value domain, worked out from all of them, so equal heights mean equal values. That rule is for position. A colour scale shows differences within its own chart: its domain spans the values shown and need not start at zero (a heat map of averages from 166 to 251 put on a line chart's 0 to 300 shaded every cell near-black; rendered on iOS). A share of a whole keeps 0 to 100% when the point is how big it is; when the point is how it changes, let the line leave zero and say so in the heading.
 
-- **Several aligned charts, one per measure,** as on Apple's Activity screen, show related measures side by side without forcing them onto one scale (`gallery/small-multiples.md`).
+- **Several aligned charts, one per measure,** as on the Activity screen of Apple's Health app (three bar charts, one per ring, in the HIG), show related measures side by side without forcing them onto one scale (`gallery/small-multiples.md`).
 - **Link related charts.** A selection in one chart highlighted in the others lets people follow one period or item across several views (`gallery/linked-charts.md`). A selected category acts the same way everywhere: a figure that sums across the categories counts only the selected one, a chart whose series are the categories keeps them all with the others faded, and a shade that encodes a value is never faded, since that would misstate it. One headline over several charts takes its figures from them, each one a reader can find in a panel.
 - **A chart can be the legend.** In a dashboard, a small bar chart of the categories, coloured by the shared scale, tells people what each colour means and gives them something to tap; the other charts then hide their own legends.
 - **Keep category order the same** in every view of the same data.

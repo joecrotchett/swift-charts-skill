@@ -133,7 +133,7 @@ Recipe: `gallery/donut.md`.
 | Modifier | Does |
 |---|---|
 | `chartScrollableAxes(.horizontal)` | Turns scrolling on for the axis. |
-| `chartXVisibleDomain(length:)` | How much of the axis is visible at once. On a date axis the length is in seconds. |
+| `chartXVisibleDomain(length:)` | How much of the axis is visible at once, in data units: seconds on a date axis, the number of visible categories on a category axis. |
 | `chartScrollTargetBehavior(_:)` | Where scrolling comes to rest: see `ChartScrollTargetBehavior` below. |
 | `chartScrollPosition(x:)` | Binds the leading edge of the visible window. |
 

@@ -61,7 +61,6 @@ Chart {
 ## Variations
 
 - **Emphasis by toggle.** The recipe greys the per-month marks while the average line is showing, so only one thing is emphasised at a time. One `foregroundStyle` on the `ForEach` recolours every mark inside it.
-- **Month initials.** `AxisValueLabel(format: .dateTime.month(.narrow), centered: true)` puts a one-letter label under the middle of each month's band.
 
 ## Accessibility
 
