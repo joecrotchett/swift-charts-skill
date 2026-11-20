@@ -8,7 +8,7 @@ Two or more charts on one screen, usually sharing an axis, where the same period
 
 ## Composition
 
-- Each chart binds `chartXSelection` to the same value. Minimum iOS 17.0.
+- Each chart binds `chartXSelection` to the same value. Minimum iOS 17.0. On iOS the built-in selection ends when the finger lifts, so every panel snaps back with it; for a selection that lasts, select on tap with `chartGesture` (`../interaction.md`, *Custom gestures*; pressed on iOS across four panels), give a control that clears it, and a picker that makes the same selection without a gesture.
 - A `RectangleMark` band, written once as a `ChartContent` type, drawn in every chart while a selection exists.
 - The same x domain on every chart, covering all their days, so a day falls at the same place even when one chart's records start later; and the same y domain where heights should compare, which also keeps the plots the same width.
 
@@ -36,11 +36,11 @@ struct LinkedCharts: View {
                 Text(store.store).font(.headline)
                 Chart {
                     if let selectedDay {
-                        SelectedDayBand(day: selectedDay)
+                        SelectedDayBand(day: selectedDay, calendar: calendar)
                     }
                     ForEach(store.days) { day in
                         BarMark(
-                            x: .value("Day", day.day, unit: .day),
+                            x: .value("Day", day.day, unit: .day, calendar: calendar),
                             y: .value("Cups", day.cups)
                         )
                     }
@@ -61,10 +61,12 @@ struct LinkedCharts: View {
 /// A band behind the marks for the selected day, as a reusable piece of chart content.
 struct SelectedDayBand: ChartContent {
     let day: Date
+    /// The calendar the bars use, so the band falls on the same day as they do.
+    var calendar = Calendar(identifier: .gregorian)
 
     var body: some ChartContent {
         RectangleMark(
-            x: .value("Selected day", day, unit: .day),
+            x: .value("Selected day", day, unit: .day, calendar: calendar),
             width: .ratio(1)
         )
         .foregroundStyle(.gray.opacity(0.25))
@@ -82,6 +84,8 @@ struct SelectedDayBand: ChartContent {
 
 ## Pitfalls
 
+- **A band on a category axis, declared before the marks, adds its category to the axis first,** so the selected row moves to the top (seen on iOS). Fix the order with `chartYScale(domain:)`.
+- **The hidden band says nothing,** so VoiceOver is not told what is selected: end the selected element's value with "selected" (read on iOS), and give the chart a new `.id` when the selection changes, since changed labels are otherwise not read again (`../accessibility.md`).
 - **Text that promises the band "in both" charts** is wrong for a day only one of them recorded: the other has no bar there and draws none.
 - The bound value is the raw position, not a data point. The band's `unit:` places it on the right day for drawing; snap the value yourself before using it to look anything up (`../interaction.md`).
 - On an iOS 16 target the selection modifier has to be gated. Replace `chartXSelection` with the gated modifier under *Custom gestures* in `../interaction.md`, which falls back to an overlay gesture writing the same binding; the band and everything else here are iOS 16.0.

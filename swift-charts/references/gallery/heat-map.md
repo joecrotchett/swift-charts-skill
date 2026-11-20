@@ -38,7 +38,7 @@ struct HeatMapRecipe: View {
 
 ## Variations
 
-**Another colour ramp.** Pass a `Gradient` as the range of the colour scale.
+**Another colour ramp.** Pass a `Gradient` as the range of the colour scale. Keep its light end apart from what the chart sits on: `systemGray6` is the colour of a grouped panel in Dark Mode, so the lowest cells vanish there; `Color(.systemGray3)` to `Color(.label)` runs light to dark in Light Mode and dark to light in Dark Mode, both visible (rendered on iOS). Give the scale a domain spanning the values shown (`../scales.md`).
 
 ![The same grid running from yellow for low values to red for high values.](../../assets/gallery/heat-map-gradient.png)
 
@@ -102,6 +102,8 @@ struct BinnedHeatMap: View {
 }
 ```
 
+The recipe bins in a computed property, which runs again on every redraw. For a large collection, bin once when the data changes, in the model, and pass the cells in (`../vectorized-plots.md`, *Keeping a large plot fast*).
+
 **Many cells** (iOS 18.0+): `RectanglePlot` (`../vectorized-plots.md`).
 
 ## Accessibility
@@ -113,3 +115,4 @@ By default each column is one element giving the average of its cells ("7am, ave
 - **"Light to dark" is the Light Mode ramp.** In Dark Mode the default gradient runs from near-black for low values to bright for high ones. Do not describe the cells as darker or lighter in text beside the chart.
 - **Left at its defaults the chart is not a grid.** The row names are drawn inside the plot, above each row, and the cells shrink to thin strips beneath them. Move the row labels outside and set both sizes, as in the recipe.
 - The data needs a row for every cell. A missing combination leaves a hole.
+- The gradient legend's numbers are not thinned at large text and collide; draw your own key with `chartLegend(position:alignment:spacing:content:)` there (`../legend.md`, *A legend of your own*).

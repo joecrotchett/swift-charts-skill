@@ -284,6 +284,5 @@ extension View {
 
 **Pitfalls:**
 
-- Forgetting to subtract the plot area's origin in an overlay gesture (`plot-area.md`).
 - An overlay that is not hit-testable receives nothing. Give the clear shape a `contentShape`.
 - **A drag gesture in `chartOverlay` takes the page's vertical swipes.** In a vertical `ScrollView`, a swipe that starts on the chart does not scroll the page; it starts the drag. A SwiftUI `LongPressGesture` sequenced before the `DragGesture` does not fix it, on `.gesture` or `.simultaneousGesture` (both pressed on the iOS simulator). The built-in selection does not have the problem, so prefer it. Where an overlay drag is needed on iOS 18 or later, a UIKit `UILongPressGestureRecognizer` attached through `UIGestureRecognizerRepresentable`, with a short minimum press, lets a swipe scroll the page and a held drag select (pressed).

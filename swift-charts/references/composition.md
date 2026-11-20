@@ -16,13 +16,15 @@ A chart made with the framework's own marks, scales and axes gets these without 
 
 - Light and Dark Mode, and Increase Contrast.
 - Dynamic Type for its labels, and a layout that adapts to the space and the device.
-- Numbers and dates on its default axes formatted for the locale. An axis given an explicit `format:` uses that style's own locale, the device's, and ignores a `\.locale` set on the view (a preview, a test, one view shown in another language); give the style the environment's locale there (`data.md`, the calendar example). The same goes for the words the app writes about the chart: read `\.locale` in the view and pass it to whatever builds the headline, the element labels and values, and the chart descriptor, so a number is written one way everywhere.
+- Numbers and dates on its default axes formatted for the locale.
 - Right-to-left layout: the x axis runs from the right, the value axis and its title move to the left, the legend moves to the right, and leading and trailing annotation positions swap. It follows `\.layoutDirection`, not the locale: an Arabic locale alone changes digits and month names and mirrors nothing.
 - A starting point for VoiceOver: an element per position, and for most charts an Audio Graph. It is not enough on its own (`accessibility.md`).
 - Animation when its data changes inside a SwiftUI animation.
 - The same 2D code on every Apple platform.
 
 Do not rebuild any of these by hand, and do not defeat them: hard-coded colours that only work in one appearance, fixed font sizes on labels, hand-formatted number strings, and custom drawing in place of marks each give one up.
+
+**The locale.** An axis given an explicit `format:` uses that style's own locale, the device's, and ignores a `\.locale` set on the view (a preview, a test, one view shown in another language); give the style the environment's locale there (`data.md`, the calendar example). The same goes for the words the app writes about the chart: read `\.locale` in the view and pass it to whatever builds the headline, the element labels and values, and the chart descriptor, so a number is written one way everywhere.
 
 **Animating a change.** A chart animates like any SwiftUI view. When a control switches the values shown for the same categories, animate it:
 

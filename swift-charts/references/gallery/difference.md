@@ -27,6 +27,13 @@ struct DifferenceChartRecipe: View {
         zip(harbour, station).map { (day: $0.day, harbour: $0.cups, station: $1.cups) }
     }
 
+    /// Both series' range widened to the next 10 cups each way: the drawn axis and the descriptor share it.
+    private var cupsAxis: ClosedRange<Double> {
+        let cups = (harbour + station).map { Double($0.cups) }
+        let lower = ((cups.min() ?? 0) / 10).rounded(.down) * 10
+        return lower ... max(lower + 10, ((cups.max() ?? 0) / 10).rounded(.up) * 10)
+    }
+
     var body: some View {
         Chart {
             ForEach(days, id: \.day) { item in
@@ -61,8 +68,8 @@ struct DifferenceChartRecipe: View {
                 .accessibilityHidden(true)
             }
         }
-        .chartYScale(domain: .automatic(includesZero: false))
-        .accessibilityChartDescriptor(TwoStoreDescriptor(harbour: harbour, station: station))
+        .chartYScale(domain: cupsAxis)
+        .accessibilityChartDescriptor(TwoStoreDescriptor(harbour: harbour, station: station, cupsAxis: cupsAxis))
     }
 }
 
@@ -70,6 +77,8 @@ struct DifferenceChartRecipe: View {
 struct TwoStoreDescriptor: AXChartDescriptorRepresentable {
     let harbour: [DailySales]
     let station: [DailySales]
+    /// The value axis as drawn, set on the chart with `chartYScale(domain:)`.
+    let cupsAxis: ClosedRange<Double>
 
     func makeChartDescriptor() -> AXChartDescriptor {
         let dates = harbour.map { $0.day.formatted(.dateTime.month(.wide).day()) }
@@ -78,14 +87,11 @@ struct TwoStoreDescriptor: AXChartDescriptorRepresentable {
                 name: name, isContinuous: true,
                 dataPoints: zip(dates, days).map { AXDataPoint(x: $0, y: Double($1.cups)) })
         }
-        let cups = (harbour + station).map { Double($0.cups) }
-        // The drawn scale leaves out zero, so the range starts at the lowest value.
-        let range = (cups.min() ?? 0) ... (cups.max() ?? 0)
         return AXChartDescriptor(
             title: "Daily cups sold, Harbour and Station",
             summary: "\(dates.count) days. Harbour ahead on \(zip(harbour, station).filter { $0.cups > $1.cups }.count) of them.",
             xAxis: AXCategoricalDataAxisDescriptor(title: "Day", categoryOrder: dates),
-            yAxis: AXNumericDataAxisDescriptor(title: "Cups sold", range: range, gridlinePositions: []) {
+            yAxis: AXNumericDataAxisDescriptor(title: "Cups sold", range: cupsAxis, gridlinePositions: []) {
                 $0.isFinite ? spokenCups(Int($0.rounded())) : ""
             },
             additionalAxes: [],

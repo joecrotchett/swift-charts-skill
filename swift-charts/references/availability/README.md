@@ -62,6 +62,7 @@ Each of these compiles with an iOS 16.0 / macOS 13.0 deployment target. List eve
 
 `if #available` works directly in a chart's content. Give the older OS a different mark.
 
+<!-- snippet: Availability/GatedMark.swift#gate-mark -->
 ```swift
 Chart(shares) { share in
     if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -78,6 +79,7 @@ Chart(shares) { share in
 
 Wrap the newer modifier in a `View` extension so the chart itself is written once. The example below does nothing on the older OS, which suits an enhancement people can live without. When the feature is required, the `else` branch needs a real fallback: for selection, the overlay gesture in `interaction.md`.
 
+<!-- snippet: Availability/GatedChartModifier.swift#gate-chart-modifier -->
 ```swift
 extension View {
     @ViewBuilder
@@ -95,6 +97,7 @@ extension View {
 
 The same idea for a modifier on a mark, using `@ChartContentBuilder`.
 
+<!-- snippet: Availability/GatedMarkModifier.swift#gate-mark-modifier -->
 ```swift
 extension ChartContent {
     @ChartContentBuilder
@@ -112,6 +115,7 @@ extension ChartContent {
 
 When the chart only makes sense on the newer OS, mark the type and choose at the call site. State of a newer type (a `Chart3DPose`) lives in the marked type too: held by the view that makes the check, it does not compile.
 
+<!-- snippet: Availability/GatedWholeChart.swift#gate-whole-chart -->
 ```swift
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 struct DonutChart: View {

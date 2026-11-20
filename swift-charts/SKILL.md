@@ -41,15 +41,15 @@ Load only the references the task needs.
    - *Escape hatch*: needs SwiftUI outside Swift Charts (`references/limits-and-escapes.md`).
    - *Not feasible*: say so and propose the nearest achievable design.
 4. **Report the feasibility table before writing code** when anything is not *Native*.
-5. Implement, then apply `references/accessibility.md`, `references/audio-graph.md` and `references/review-checklist.md`.
+5. Implement, then apply `references/accessibility.md`, `references/accessibility-beyond-voiceover.md`, `references/audio-graph.md` and `references/review-checklist.md`.
 
 ### Implement or modify a chart
 
 1. For a known form, start from its recipe (`references/gallery/README.md`). Shape the data (`references/data.md`), then choose and compose marks (`references/marks.md`, `references/composition.md`), configure them (`references/mark-configuration.md`) and style them (`references/mark-modifiers.md`).
-2. Configure scales (`references/scales.md`), axes (`references/axes.md`), legend (`references/legend.md`) and plot area (`references/plot-area.md`) where the design differs from the defaults.
+2. Configure scales (`references/scales.md`), axes (`references/axes.md`), legend (`references/legend.md`) and plot area (`references/plot-area.md`) where the design differs from the defaults, and check every axis's labels at phone width and the largest text size (`references/axes.md`, *`AxisValueLabel`*).
 3. Add annotations (`references/annotations.md`) and interaction (`references/interaction.md`) if required, a visible title or headline saying what the chart shows (`references/design.md`, *Descriptions*), and a placeholder for when there is no data.
 4. For large data sets, draw fewer points: bin or aggregate; a plot (iOS 18+) suits a large uniform collection, but measured no faster than marks (`references/vectorized-plots.md`).
-5. Apply `references/accessibility.md`, `references/audio-graph.md` and `references/review-checklist.md`.
+5. Apply `references/accessibility.md`, `references/accessibility-beyond-voiceover.md`, `references/audio-graph.md` and `references/review-checklist.md`.
 
 ### Diagnose a chart that looks or behaves wrong
 
@@ -74,7 +74,7 @@ Follow `references/accessibility.md` in full for the elements and everything bey
 - `references/marks.md` - each mark type (area, line, point, rectangle, rule, bar, sector) and how a mark's position is given as a value, an interval or nothing; read when choosing a mark.
 - `references/mark-configuration.md` - stacking methods, bar and rectangle dimensions, line interpolation, built-in, outlined and custom symbol shapes; read when setting how marks stack, how wide they are, how a line travels between points, or what a point looks like.
 - `references/mark-modifiers.md` - the modifiers every mark shares: styling, positioning, symbols, encoding data as colour, position, symbol, size or line style, layering, clipping; read when styling marks or matching a visual design.
-- `references/composition.md` - the model (marks, mark properties, scales), what the framework handles for you, the `Chart` initializers, series, layering, stacking and grouping, `Plot`, animation, reusable `ChartContent` types; read first for any chart, and again when it has more than one mark or series.
+- `references/composition.md` - the model (marks, mark properties, scales), what the framework handles for you (and the locale and right-to-left rules), the `Chart` initializers, series, layering, stacking and grouping, `Plot`, animation, reusable `ChartContent` types; read first for any chart, and again when it has more than one mark or series.
 - `references/scales.md` - position scales: exact, zero-free, reversed and adjusted domains, plot padding, log and other scale types; colour and symbol scales; read when an axis range or direction, or a colour mapping, differs from the default.
 - `references/axes.md` - hiding or rebuilding an axis: which values are marked, on which edge, label format, placement presets, grid lines, ticks, custom and conditional labels, crowded labels, axis titles; read when an axis is not the default.
 - `references/legend.md` - hiding and placing the legend, and building your own in the chart's colours; read when the legend is not the default.
@@ -84,7 +84,7 @@ Follow `references/accessibility.md` in full for the elements and everything bey
 - `references/vectorized-plots.md` - the plot types (iOS 18+): one plot for a whole collection, key-path modifiers and their ordering rule, keeping a large plot fast, function and parametric plots, trend lines; read for large data sets, slow charts or mathematical curves.
 - `references/chart3d.md` - `Chart3D`, surface plots, 3D points, pose and projection, and what 3D cannot do; read for any 3D chart.
 - `references/accessibility.md` - choosing what an accessibility element covers, labelling marks through `Plot`, grouping marks into one element, hiding what adds nothing, testing; read for every chart before it is done.
-- `references/accessibility-beyond-voiceover.md` - keyboard and Switch Control navigation, colour and contrast, Dynamic Type, announcing changes; read for every interactive chart, and whenever colour or text size carries meaning.
+- `references/accessibility-beyond-voiceover.md` - keyboard and Switch Control navigation, colour and contrast, Dynamic Type, announcing changes; read for every chart before it is done, and again when colour or text size carries meaning.
 - `references/audio-graph.md` - writing a chart descriptor: title, summary, axes, series, units and dates for the Audio Graph, for category, number and single-value charts, and the charts that have no Audio Graph without one; read for every chart before it is done.
 - `references/accessibility-defaults.md` - exactly what VoiceOver reads and what the Audio Graph is given for each kind of chart with no accessibility code; read when predicting or explaining what a chart says.
 - `references/design.md` - Apple's design guidance mapped to API: whether to chart, marks, axes, descriptions, interaction, colour, charts in an app experience (sizes from a widget or watch face to a full screen, empty states, a family of charts); read when deciding what to build, and when judging whether a chart is well designed.

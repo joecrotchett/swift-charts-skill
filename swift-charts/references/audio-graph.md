@@ -73,12 +73,12 @@ struct DescribedSalesChart: View {
 
 That example has a categorical x axis and separate bars. Choosing each part:
 
-- **Dates:** a categorical axis of written-out dates, as above. A date axis has no descriptor type of its own.
+- **Dates and times:** a categorical axis of written-out dates or times, as above. A descriptor has no date or time axis type.
 - **`isContinuous`:** `true` when the chart draws one connected shape over an ordered x such as time or distance (a line, an area, or bars standing in for one, such as an elevation profile); `false` for separate totals, a bar per day or per category included, and for a line or area drawn over unordered categories. The Audio Graph draws its own picture of the chart from the descriptor, a line or bars accordingly.
 - **Several numbers at one position** (a range's low and high, a box plot's five numbers) are one named series per number, over the same categories.
 - **Every series named**, one `AXDataSeriesDescriptor` per series the listener should be able to play on its own. In a stacked chart each point carries its piece's own value, not its height in the stack; the framework's own Audio Graph does the same.
 - **The summary in actual values.** The system adds its own remarks on trend beneath it.
-- **The y axis's range matches the drawn scale:** from zero when the chart's value axis includes zero, from the lowest value when it does not. When you set the axis's values yourself and they reach past the data, they widen the scale (a log axis labelled at 100 and 1,000,000 runs from 100 to 1,000,000): take the range from those values. An automatic axis's rounded ends cannot be read without a `ChartProxy`, and the framework's own Audio Graph uses them (0 to 300 for data up to 219): set the value axis's domain yourself with `chartYScale(domain:)` and give the descriptor that same range.
+- **The y axis's range matches the drawn scale, not the data.** When you set the axis's values yourself and they reach past the data, they widen the scale (a log axis labelled at 100 and 1,000,000 runs from 100 to 1,000,000): take the range from those values. An automatic axis's rounded ends cannot be read without a `ChartProxy`, and the framework's own Audio Graph uses them (0 to 300 for data up to 219): set the value axis's domain yourself with `chartYScale(domain:)`, with or without zero, and give the descriptor that same range.
 - **A scrolling chart ignores its descriptor** (`chartScrollableAxes`): attach it inside an `accessibilityRepresentation` instead (`interaction.md`, *Scrolling*).
 - **A descriptor that changes with state needs a new chart identity.** The Audio Graph keeps the descriptor it read for the chart's identity, so a control that changes only the range or summary leaves the old one (read on iOS). Give the chart `.id` built from every such state (`accessibility.md`, *Pitfalls*).
 - **A third dimension** goes in `additionalAxes: [AXNumericDataAxisDescriptor(...)]`, each point carrying its value as `AXDataPoint(x:y:additionalValues: [.number(z)])` (read on iOS as an extra axis; `additionalValues` cannot be read back in Swift, so test the axes and counts).
@@ -97,6 +97,8 @@ A number on both axes takes `AXNumericDataAxisDescriptor` twice and data points 
 /// A descriptor for a line over a number axis: both axes numeric, each point a pair of numbers.
 struct ElevationDescriptor: AXChartDescriptorRepresentable {
     let samples: [ElevationSample]
+    /// The elevation axis as drawn: set it on the chart with `chartYScale(domain:)` and pass the same range.
+    let metresAxis: ClosedRange<Double>
 
     func makeChartDescriptor() -> AXChartDescriptor {
         let heights = samples.map { Double($0.metres) }
@@ -111,7 +113,7 @@ struct ElevationDescriptor: AXChartDescriptorRepresentable {
                 gridlinePositions: []
             ) { "\($0.formatted(.number.precision(.fractionLength(1)))) kilometres" },
             yAxis: AXNumericDataAxisDescriptor(
-                title: "Elevation", range: lowest ... highest, gridlinePositions: []
+                title: "Elevation", range: metresAxis, gridlinePositions: []
             ) { $0.isFinite ? "\(Int($0.rounded())) metres" : "" },
             additionalAxes: [],
             series: [AXDataSeriesDescriptor(
@@ -155,7 +157,7 @@ struct ProgressDescriptor: AXChartDescriptorRepresentable {
 
 A grid of two categories, such as a heat map, has no second category axis to give: describe it as one series per row, each over the column categories.
 
-**Some charts get no automatic Audio Graph at all**: those whose marks do not have a value on each axis. That covers pies, donuts and gauges, heat maps and calendar grids, timelines, a single stacked bar, a one-axis strip of points, and candlesticks. A descriptor gives them one; for a single stacked bar, a pie or a donut, its value range runs from 0 to the total, of which each part is a share.
+**Some charts get no automatic Audio Graph at all**: those whose marks do not have a value on each axis (the list, range bars included, is under *Audio Graph* in `accessibility-defaults.md`). A descriptor gives them one; for a single stacked bar, a pie or a donut, its value range runs from 0 to the total, of which each part is a share.
 
 ## Pitfalls
 

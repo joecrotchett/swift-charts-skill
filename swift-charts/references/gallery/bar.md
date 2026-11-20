@@ -58,37 +58,7 @@ Chart(sales) { item in
 
 ![Five pale blue horizontal bars with the drink's name written inside the start of each.](../../assets/gallery/bar-named.png)
 
-**With a line for the average or a target:** a `RuleMark` beside the bars, labelled with an `annotation`. Use `Chart { ForEach ... }`, since a rule written inside `Chart(data)` is created once per element:
-
-<!-- snippet: Accessibility/AccessibilitySnippets.swift#rule-label -->
-```swift
-struct BarsWithLabelledTarget: View {
-    let days: [DailySales]
-    let target: Int
-    let calendar: Calendar // the calendar the dates were made in
-
-    var body: some View {
-        Chart {
-            ForEach(days) { day in
-                Plot {
-                    BarMark(x: .value("Day", day.day, unit: .day, calendar: calendar), y: .value("Cups", day.cups))
-                }
-                .accessibilityLabel(day.day.formatted(Date.FormatStyle(timeZone: calendar.timeZone).weekday(.wide).month(.wide).day()))
-                .accessibilityValue(Text("^[\(day.cups) cup](inflect: true)"))
-            }
-            // A rule across the plot is an element of its own, so it is labelled directly.
-            RuleMark(y: .value("Target", target))
-                .foregroundStyle(.red)
-                .accessibilityLabel("Target")
-                .accessibilityValue(Text("^[\(target) cup](inflect: true)"))
-                // The visible label; annotation views are not read, so the rule carries the words too.
-                .annotation(position: .top, alignment: .leading) {
-                    Text("Target: \(target, format: .number)").font(.caption).foregroundStyle(.red)
-                }
-        }
-    }
-}
-```
+**With a line for the average or a target:** a `RuleMark` beside the bars, labelled with an `annotation`. Use `Chart { ForEach ... }`, since a rule written inside `Chart(data)` is created once per element. Code under *Label or hide every rule* in `../accessibility.md`.
 
 **Dates on the category axis.** Pass the date with a `unit:` so each bar takes up its day or month: see `compact.md` and `range-bar.md`.
 

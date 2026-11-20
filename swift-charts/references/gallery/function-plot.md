@@ -104,7 +104,7 @@ struct SquareFunctionPlot: View {
 }
 ```
 
-**Tracing the curve.** `chartXSelection` gives the x under the finger; a `PointMark` at that x and the function's value there, with an annotation, shows the coordinates. On iOS a held press selects and a drag moves the point along the curve; a tap selects nothing and lifting clears it (pressed on the simulator, as for marks in `interaction.md`). Say so beside the chart, and give VoiceOver the curve's values another way (`vectorized-plots.md`, *Accessibility*).
+**Tracing the curve.** `chartXSelection` gives the x under the finger; a `PointMark` at that x and the function's value there, with an annotation, shows the coordinates. On iOS a held press selects and a drag moves the point along the curve; a tap selects nothing and lifting clears it (pressed on the simulator, as for marks in `interaction.md`). Say so beside the chart, and give VoiceOver the curve's values another way (`vectorized-plots.md`, *Accessibility*). Nothing chooses an annotation's side for you: decide it from the data, putting the label where the curve leaves room.
 
 ![A sine wave with a dot on it and the label (2.2, 0.81) above the dot.](../../assets/gallery/function-plot-trace.png)
 

@@ -21,7 +21,9 @@ A grid seven tiles wide with one tile per day and one row per week, each tile sh
 ```swift
 struct CalendarHeatMapRecipe: View {
     let days: [DailySales]
+    /// The calendar the dates were made in: days and weeks are cut in it, not in the device's (`data.md`).
     var calendar = Calendar.current
+    @Environment(\.locale) private var locale
 
     var body: some View {
         Chart(days) { day in
@@ -37,14 +39,14 @@ struct CalendarHeatMapRecipe: View {
             .foregroundStyle(by: .value("Cups", day.cups))
             .cornerRadius(4)
             .annotation(position: .overlay, alignment: .bottomTrailing, spacing: 3) {
-                // Formatted to a string in the data's time zone: `Text(_:format:)` would use the device's.
-                Text(day.day.formatted(Date.FormatStyle(timeZone: calendar.timeZone).day()))
+                // Formatted to a string in the data's time zone and the view's locale: `Text(_:format:)` would use the device's.
+                Text(day.day.formatted(Date.FormatStyle(locale: locale, timeZone: calendar.timeZone).day()))
                     .font(.caption2)
                     .foregroundStyle(.white)
             }
             .annotation(position: .overlay, alignment: .topLeading, spacing: 3) {
                 if calendar.component(.day, from: day.day) == 1 {
-                    Text(day.day.formatted(Date.FormatStyle(timeZone: calendar.timeZone).month(.abbreviated)))
+                    Text(day.day.formatted(Date.FormatStyle(locale: locale, timeZone: calendar.timeZone).month(.abbreviated)))
                         .font(.caption2.bold())
                         .foregroundStyle(.white)
                 }
@@ -52,7 +54,7 @@ struct CalendarHeatMapRecipe: View {
         }
         .chartXAxis {
             AxisMarks(position: .top, values: .stride(by: .day, calendar: calendar)) { _ in
-                AxisValueLabel(format: Date.FormatStyle(timeZone: calendar.timeZone).weekday(.abbreviated), centered: true)
+                AxisValueLabel(format: Date.FormatStyle(locale: locale, timeZone: calendar.timeZone).weekday(.abbreviated), centered: true)
             }
         }
         .chartYAxis(.hidden)
@@ -97,7 +99,7 @@ struct CalendarHeatMapRecipe: View {
                         let date = calendar.date(byAdding: .day, value: column, to: week)
                         let day = days.first { calendar.isDate($0.day, inSameDayAs: date ?? .distantPast) }
                         Rectangle()
-                            .accessibilityLabel((day?.day ?? .now).formatted(Date.FormatStyle(timeZone: calendar.timeZone).weekday(.wide).day().month(.wide)))
+                            .accessibilityLabel((day?.day ?? .now).formatted(Date.FormatStyle(locale: locale, timeZone: calendar.timeZone).weekday(.wide).day().month(.wide)))
                             .accessibilityValue(Text("^[\(day?.cups ?? 0) cup](inflect: true)"))
                             // Headings let VoiceOver jump from month to month.
                             .accessibilityAddTraits(

@@ -1,6 +1,6 @@
 # Candlestick chart
 
-![Thirty thin vertical lines along a date axis, each with a wider green or red box over part of it, on a price scale from 160 to 190.](../../assets/gallery/candlestick.png)
+![Thirty thin vertical lines along a date axis, each with a wider blue or orange box over part of it, on a price scale from 160 to 190.](../../assets/gallery/candlestick.png)
 
 ## Visual signature
 
@@ -42,6 +42,12 @@ struct CandlestickMark<X: Plottable, Y: Plottable>: ChartContent {
 struct CandlestickChartRecipe: View {
     let prices: [DailyPrice]
 
+    /// The lows and highs widened to the next 10 dollars each way: the drawn axis and the descriptor share it.
+    private var priceAxis: ClosedRange<Double> {
+        let lower = ((prices.map(\.low).min() ?? 0) / 10).rounded(.down) * 10
+        return lower ... max(lower + 10, ((prices.map(\.high).max() ?? 0) / 10).rounded(.up) * 10)
+    }
+
     var body: some View {
         Chart(prices) { price in
             CandlestickMark(
@@ -61,15 +67,17 @@ struct CandlestickChartRecipe: View {
         }
         // Blue and orange, not green and red, which carry no meaning in some cultures.
         .chartForegroundStyleScale(["Closed higher": Color.blue, "Closed lower": Color.orange])
-        // Prices sit far from zero; without this the candles are squashed at the top.
-        .chartYScale(domain: .automatic(includesZero: false))
+        // Prices sit far from zero; without a domain that leaves zero out the candles are squashed at the top.
+        .chartYScale(domain: priceAxis)
         // A candlestick gets no Audio Graph of its own.
-        .accessibilityChartDescriptor(ClosingPriceDescriptor(prices: prices))
+        .accessibilityChartDescriptor(CandleDescriptor(prices: prices, priceAxis: priceAxis))
     }
 }
 
-struct ClosingPriceDescriptor: AXChartDescriptorRepresentable {
+struct CandleDescriptor: AXChartDescriptorRepresentable {
     let prices: [DailyPrice]
+    /// The value axis as drawn, set on the chart with `chartYScale(domain:)`.
+    let priceAxis: ClosedRange<Double>
 
     func makeChartDescriptor() -> AXChartDescriptor {
         let days = prices.map { $0.day.formatted(.dateTime.month(.wide).day()) }
@@ -85,8 +93,7 @@ struct ClosingPriceDescriptor: AXChartDescriptorRepresentable {
             xAxis: AXCategoricalDataAxisDescriptor(title: "Day", categoryOrder: days),
             yAxis: AXNumericDataAxisDescriptor(
                 title: "Price, dollars a pound",
-                // The drawn scale spans the wicks, lows to highs.
-                range: (lows.min() ?? 0) ... (highs.max() ?? 0),
+                range: priceAxis,
                 gridlinePositions: []
             ) { "\($0.formatted()) dollars" },
             additionalAxes: [],
@@ -106,9 +113,7 @@ struct ClosingPriceDescriptor: AXChartDescriptorRepresentable {
 
 The custom mark wraps its wick and body in a `Plot`, so the label and value the recipe gives each candle make it one element covering both. Without the plot the label is unreliable.
 
-A candlestick gets no automatic Audio Graph; the recipe attaches a chart descriptor of the closing prices (`../audio-graph.md`).
-
-Rise and fall are encoded as a value, so the legend names them, but they are still told apart by colour alone on the chart. Add a second difference where the design allows it, such as a small arrow annotation above each candle; an outlined body would need a style set inside the mark (`../design.md`, *Colour*). The descriptor gives the four prices as four series, not continuous, over the drawn range from the lowest low to the highest high.
+Rise and fall are encoded as a value, so the legend names them, but they are still told apart by colour alone on the chart. Add a second difference where the design allows it, such as a small arrow annotation above each candle; an outlined body would need a style set inside the mark (`../design.md`, *Colour*). A candlestick gets no automatic Audio Graph; the recipe's descriptor (`../audio-graph.md`) gives the four prices as four series, not continuous, over the drawn range: the lows and highs widened to a round step, one domain passed to the chart and the descriptor.
 
 ## Pitfalls
 

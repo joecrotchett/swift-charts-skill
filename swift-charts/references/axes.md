@@ -27,7 +27,7 @@ The closure can hold several `AxisMarks`, and `if`, `if`-`else`, `switch` and `i
 
 **Use for:** a title for the axis, naming what it measures and its unit: `.chartXAxisLabel("Energy density (watts per m²)")`. `chartYAxisLabel` is the same for y. It is separate from the labels on the axis marks.
 
-By default the x title sits below the axis at the leading edge and the y title above the axis at the trailing edge. `position:` (an `AnnotationPosition`) and `alignment:` move it, and a closure form takes any view. A y title at `.leading` or `.trailing` turns to run along the plot's side; `alignment:` places a title against the plot area's edges. A title is never wrapped or shortened: a long one runs past the chart's frame at large text sizes, even in a closure with `lineLimit`, so keep titles short or use a shorter one at large sizes. There is also `spacing:`. At the largest text sizes the default y title meets the top value label; `spacing: 8` did not separate them on iOS, and `position: .top, alignment: .leading` did up to `.accessibility3`. At `.accessibility4` and `.accessibility5` a 16-character title ("Temperature (°C)") still met the label there: use a shorter title at those sizes ("°C"). A time of day held as a number of hours gets automatic labels at round numbers, not clock times (6 to 18 was labelled 10 and 15): give it explicit values at a clock step (every 3 hours) with labels written as times, or plot it as a `Date`.
+By default the x title sits below the axis at the leading edge and the y title above the axis at the trailing edge. `position:` (an `AnnotationPosition`) and `alignment:` move it, and a closure form takes any view. A y title at `.leading` or `.trailing` turns to run along the plot's side; `alignment:` places a title against the plot area's edges. A title is never wrapped or shortened: a long one runs past the chart's frame at large text sizes, even in a closure with `lineLimit`, so keep titles short or use a shorter one at large sizes. There is also `spacing:`. At the largest text sizes the default y title meets the top value label; `spacing: 8` did not separate them on iOS, and `position: .top, alignment: .leading` did up to `.accessibility3`. At `.accessibility4` and `.accessibility5` a 16-character title ("Temperature (°C)") still met the label there: use a shorter title at those sizes ("°C").
 
 <!-- snippet: Dashboard/DashboardPatterns.swift#axis-titles -->
 ```swift
@@ -107,7 +107,9 @@ The closure can take the `AxisValue` it is drawing, to decide per value what to 
 | `.stride(by: .hour, count: 3)` | Every third hour; any `Calendar.Component` (`.day`, `.month`, ...). With `unit:` the domain runs to the start of the period after the last, so a stride can label a day the data does not have ("29" on 28 days); pass the exact dates then |
 | `[0, 50, 100]` | Exactly these values. Works for numbers, dates and category strings |
 
-Each also takes `roundLowerBound:` and `roundUpperBound:`.
+Each also takes `roundLowerBound:` and `roundUpperBound:`. The chart does not report which values its axis drew or which labels it dropped. When text has to name them, pass the values yourself (`AxisMarks(values:)`) and name only those.
+
+A time of day held as a number of hours gets automatic labels at round numbers, not clock times (6 to 18 was labelled 10 and 15): give it explicit values at a clock step (every 3 hours) with labels written as times, or plot it as a `Date`.
 
 ### `AxisMarkPosition` - iOS 16.0+
 
@@ -227,7 +229,7 @@ struct WeekdayAxis: View {
 
 **Pitfalls:**
 
-- Category labels that do not fit are truncated to a few letters and an ellipsis, not rotated. Turn them with `orientation: .vertical`, shorten the names, or switch to horizontal bars.
+- Category labels that do not fit on the default axis are truncated, with an ellipsis while there is room for one and only a letter or two on a narrow band; labels listed in an `AxisMarks` closure overlap instead. Neither is rotated: turn them with `orientation: .vertical`, shorten the names, or switch to horizontal bars.
 - Centred labels on marks plotted without a unit do not line up with the marks.
 
 ### `AxisValue` - iOS 16.0+

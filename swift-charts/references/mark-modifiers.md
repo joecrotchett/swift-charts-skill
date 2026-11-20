@@ -201,5 +201,5 @@ Chart(sales) { item in
 
 ## Pitfalls
 
-- Styling by hand and expecting a legend. Only a `by:` style encoding produces one.
+- Styling by hand and expecting a legend: a fixed style draws none. A legend comes from a `by:` encoding, or from a scale given a `domain:` (`legend.md`).
 - Repeating a modifier on every mark when it could be applied once to the `ForEach`.

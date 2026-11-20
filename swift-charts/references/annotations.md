@@ -136,7 +136,7 @@ struct LinesLabelledAtTheirEnds: View {
 
 Lines that end close together get labels that overlap; nothing moves them apart for you.
 
-An annotation is drawn with its mark, in the mark's place in the chart: a label on a band written before the bars is covered by them, and `zIndex` on the band does not lift it. To keep it on top, hang the label on a `PointMark` of `symbolSize(0)` written after the bars, as above. Where a label is wider than the plot, as at the largest text sizes, or its plate would hide marks, move it to a key under the chart and hide the key from VoiceOver when the mark already says it.
+An annotation is drawn with its mark, in the mark's place in the chart: a label on a band written before the bars is covered by them, and `zIndex` on the band does not lift it. On a `Plot` that holds a bar an annotation is drawn; on a `Plot` that holds a `LineMark` it drew nothing (iOS). Either way, hang the label on a `PointMark` of `symbolSize(0)` written after the other marks, as above. A label that names a band (the days a headline speaks of) lies inside it: shorten it to fit ("Since Mar 21"), since hung from the band's end a wider label reaches back over marks outside it. Where a label is wider than the plot, as at the largest text sizes, or its plate would hide marks, move it to a key under the chart and hide the key from VoiceOver when the mark already says it.
 
 ## Positioning and overflow
 
@@ -148,7 +148,7 @@ An annotation is drawn with its mark, in the mark's place in the chart: a label 
 |---|---|
 | `.automatic` | The default. On the last point of a line it extends the scale as `.padScale` does; name a strategy when the result matters |
 | `.padScale` | Extends the scale past the data until the annotation fits. The marks shrink a little; the annotation stays centred on its mark. It cannot extend a domain you set: the annotation then goes past the edge as with `.disabled`. A date axis given `.stride(by:)` counts from the padded start, so weekly labels move off the data's weeks; give the axis an exact array of dates instead |
-| `.fit(to: .plot)` | Slides the annotation inward to stay inside the plot area: sideways on x, down on y, where a label above a point at the top then covers its point. The scale is unchanged |
+| `.fit(to: .plot)` | Slides the annotation inward to stay inside the plot area: sideways on x, down on y, where a label above a point at the top then covers its point, and a label after the longest bar covers the bar's end (seen on iOS; leave room in the domain). The scale is unchanged |
 | `.fit(to: .chart)` | Slides it to stay inside the whole chart, so it may sit over the axis labels; on y it covers its point as `.fit(to: .plot)` does |
 | `.disabled` | Leaves it where it is. It is cut off at the chart's edge, or drawn outside the chart |
 
@@ -183,8 +183,6 @@ Choosing:
 
 - A label on the last point of a line: the default or `.padScale`, so the label stays over its point.
 - A popover that follows a selection: `.fit(to: .chart)` on x, so it slides inward at the edges; `.disabled` on y when it is meant to sit above the plot area.
-
-An annotation on a `Plot` that holds a bar is drawn; on a `Plot` that holds a `LineMark` it drew nothing (iOS): hang a line's label on a zero-size `PointMark`. A label that names a band (the days a headline speaks of) lies inside it: shorten it to fit ("Since Mar 21"), or move it to a key under the chart. Hung from the band's end, a wider label reaches back over marks outside it.
 
 ## Pitfalls
 

@@ -74,7 +74,7 @@ The protocol every collection plot conforms to, and where the key-path modifiers
 | `opacity(_:)` | A key path to a `CGFloat` from 0 to 1 |
 | `lineStyle(_:)` | A key path to a `StrokeStyle` |
 | `symbolSize(_:)` | A key path to a `CGFloat` area in square points, or to a `CGSize` |
-| `accessibilityLabel(_:)`, `accessibilityValue(_:)`, `accessibilityHidden(_:)`, `accessibilityIdentifier(_:)` | A key path to the text, `Bool` or `String`. The label and value are not read by VoiceOver, on a few points or many (iOS): a plot's elements keep their automatic wording. Give VoiceOver words through a representation (*Accessibility*, below) and the Audio Graph through a chart descriptor (`audio-graph.md`) |
+| `accessibilityLabel(_:)`, `accessibilityValue(_:)`, `accessibilityHidden(_:)`, `accessibilityIdentifier(_:)` | A key path to the text, `Bool` or `String`. The label and value are not read by VoiceOver, on a few points or many (iOS): see *Accessibility*, below |
 
 A plot is also `ChartContent`, so every modifier in `mark-modifiers.md` works on it with a plain value, applied to the whole plot: `cornerRadius(4)`, `opacity(0.7)`, `interpolationMethod(.catmullRom)`.
 
@@ -83,7 +83,7 @@ A plot is also `ChartContent`, so every modifier in `mark-modifiers.md` works on
 **Pitfalls:**
 
 - A key-path modifier after a plain-value one does not compile, and no error says why. What it says depends on the plain-value modifier (Xcode 27.0). After one with no key-path form, such as `symbol(.square)`, there are two errors on the key-path modifier's line: "instance method 'foregroundStyle(by:)' requires that 'KeyPath<Root, Value>' conform to 'Plottable'" and "cannot infer key path type from context; consider explicitly specifying a root type", whose suggestion does not help. After one that also has a key-path form (`opacity`, `symbolSize`, `lineStyle`, `foregroundStyle(_:)`), the compiler picks that form and the error lands on the plain-value line instead, reading as though that modifier wanted a key path: "cannot convert value of type 'Double' to expected argument type 'KeyPath<…, CGFloat>'" for `opacity(0.6)`, "no exact matches in call to instance method 'symbolSize'" for `symbolSize(40)`; with several, each line gets its own. In a longer expression the build may instead give up: "the compiler is unable to type-check this expression in reasonable time". Either way, move the key-path modifiers up.
-- A stored key path works as well as a literal (`.value("Colour", choice.keyPath)`), so a control can switch what a modifier reads. All the choices for one modifier must share a value type.
+- A stored key path works as well as a literal (`.value("Colour", choice.keyPath)`), so a control can switch what a modifier reads. All the choices for one modifier must share a value type. Switching the key path inside `withAnimation`, or through a binding with `.animation(...)`, moves every point of a `PointPlot` to its new place.
 - A colour stored on each element is `foregroundStyle(\.colour)`, with no `by:`. `foregroundStyle(by:)` takes a `.value(...)` and makes a scale and a legend.
 - `symbolSize(by:)` needs `chartSymbolSizeScale(range:)`, as with marks (`mark-modifiers.md`).
 
@@ -140,7 +140,7 @@ struct OrdersBarPlot: View {
 
 ### Accessibility
 
-A plot's elements are the automatic ones, merged into stretches of the axis with bare numbers and no units, and plain dates in the device's time zone (`accessibility-defaults.md`). Its key-path `accessibilityLabel` and `accessibilityValue` are not read. To give VoiceOver units and the right times, put a representation on the chart: one labelled stretch of the axis per element, each spanning the plot's full height so they are read along x (`accessibility.md`, *One element per `Plot`*). Read on iOS; the chart descriptor on the representation reaches the Audio Graph. A function plot alone is simpler: a labelled `Plot` around a function `LinePlot` is one element with that label and value (iOS). Beside other elements it is read in the order of its frame's top (a curve over a histogram came between the first two bars), so a curve over data goes into the stretches' values instead.
+A plot's elements are the automatic ones, merged into stretches of the axis with bare numbers and no units, and plain dates in the device's time zone (`accessibility-defaults.md`); its key-path `accessibilityLabel` and `accessibilityValue` are not read. Two routes give VoiceOver units and the right times, both read on iOS. A labelled `Plot` around a `PointPlot` of each portion's elements is read, but in the order of the frames' tops, not along x (portions of a scatter came out 6–8, 8–10, 12–14, 10–12); the clear full-height band that puts marks in x order (`accessibility.md`, *One element per `Plot`*; read on iOS with `LineMark`s, stacked bars and one `PointMark` per day) has not been read with a `PointPlot`. Or put a representation on the chart: one labelled stretch of the axis per element, each spanning the plot's full height (a `RectangleMark` from the bottom of the y domain to the top), read left to right. The chart descriptor on the representation reaches the Audio Graph, and since the plot stays as drawn, marks and plots can share one representation. A function plot alone is simpler: a labelled `Plot` around a function `LinePlot` is one element with that label and value (iOS). Beside other elements it is read in the order of its frame's top (a curve over a histogram came between the first two bars), so a curve over data goes into the stretches' values instead.
 
 <!-- snippet: Plots/VectorizedPlots.swift#spoken-portions -->
 ```swift
@@ -205,8 +205,7 @@ What costs time is the number of points. In single renders on the iOS simulator 
 
 Stating the domains also changes the picture, which is the better reason for it: an automatic y domain ended at 8 where the stated one ended at 10, and automatic colours went to the categories in the order they first appear in the data, so sorting the data reassigned them. Sorting also decides what is on top: sorted by drink, the last drink covered the others wherever points overlapped. State the domains for a stable axis and stable colours, and **fix the colour and size scale domains** when a selection filters the data, so nothing changes colour or size as the subset changes (`scales.md`).
 
-- **Small symbols** for a dense scatter: `symbolSize(4)`.
-- **Animate by changing what a key path points at.** Switching the property plotted on x inside `withAnimation`, or through a binding with `.animation(...)`, moves every point of a `PointPlot` to its new place.
+**Small symbols** for a dense scatter (`symbolSize(4)`) keep crowded points apart; that is a reason of legibility, and their speed was not measured.
 
 **What does cost less is fewer points,** on any release. Bin or aggregate the data first (`data.md`). A dense scatter becomes a two-dimensional histogram, one rectangle per cell coloured by count (`gallery/heat-map.md`), which shows the same density with a few hundred marks. Below iOS 18 there are no plots; since a heat map is a different chart form, gate the whole chart, not a mark inside it (`availability/README.md`, *Gate a whole chart*).
 
@@ -254,7 +253,7 @@ struct ScatterWithTrendLine: View {
 **Pitfalls:**
 
 - Return `Double.nan` where the formula gives a number but the curve must not be drawn: outside the range a model is valid for, or a gap in a piecewise function. `.nan` and `.infinity` both leave a gap. A pole needs nothing: the plot never asks for y at the exact point (on iOS, about 3,000 calls for `1 / x` on -3 to 3, none at 0) and breaks the line there by itself, so a guard such as `x == 0 ? .nan : 1 / x` never runs. A pole where the sign flips is not joined either: `tan x` near π/2 was asked for 15,014 on one side and −3,522 on the other, and no line joined them. `log` and `sqrt` of a negative are already `.nan`, and `Double` division does not trap; guard only what would (integer arithmetic, an array index).
-- A curve that leaves the y scale's domain is drawn outside the plot area, over the axis labels and beyond the chart's frame. Clip the plot area (`plot-area.md`):
+- A curve that leaves the y scale's domain is drawn outside the plot area, over the axis labels and beyond the chart's frame. Clip the plot area, which also removes the axis titles, so put the unit in the heading (`plot-area.md`):
 
 <!-- snippet: Plots/FunctionPlots.swift#undefined -->
 ```swift

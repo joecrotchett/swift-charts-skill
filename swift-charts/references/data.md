@@ -24,7 +24,7 @@ So the same `BarMark(x:y:)` is a vertical bar chart when `x` is a string and `y`
 
 **Bars of different widths** (a range per period, when the periods differ in length) make a long period look bigger than its total: say beside the chart that the height is the total, or plot a rate per unit of time instead.
 
-**A range as a value.** `.value("Time", start ..< end)` plots an interval in one parameter. A bar given a range of dates on x spans that period less the gap any bar leaves at its default width, about a third of the period, so pass `width: .inset(1)` for bars that should touch, an alternative to `unit:` when the periods are not calendar units, such as half hours:
+**A range as a value.** `.value("Time", start ..< end)` plots an interval in one parameter. A bar given a range of dates on x spans that period less the gap any bar leaves at its default width, about a third of the period, so pass `width: .inset(1)` for bars a hairline apart, or `.ratio(1)` for bars that touch, an alternative to `unit:` when the periods are not calendar units, such as half hours:
 
 <!-- snippet: Axes/AxisRecipes.swift#range-value -->
 ```swift

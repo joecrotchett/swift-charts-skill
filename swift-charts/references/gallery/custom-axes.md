@@ -111,13 +111,14 @@ func hourAxis(every hours: Int = 3, calendar: Calendar, locale: Locale) -> some 
 ```swift
 extension View {
     /// A grid line every month, with a tick and a label only where a quarter starts.
-    func quarterAxis(calendar: Calendar) -> some View {
+    /// `calendar` is the one the dates were made in, and `locale` the view's (`data.md`).
+    func quarterAxis(calendar: Calendar, locale: Locale) -> some View {
         chartXAxis {
-            AxisMarks(values: .stride(by: .month)) { value in
+            AxisMarks(values: .stride(by: .month, calendar: calendar)) { value in
                 AxisGridLine()
                 if let date = value.as(Date.self), calendar.component(.month, from: date) % 3 == 1 {
                     AxisTick()
-                    AxisValueLabel(format: .dateTime.month(.abbreviated))
+                    AxisValueLabel(format: Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month(.abbreviated))
                 }
             }
         }
@@ -131,10 +132,11 @@ extension View {
 ```swift
 extension View {
     /// Only the first and last dates are labelled: enough to say which period the chart covers.
-    func labelledAtEnds(first: Date, last: Date) -> some View {
+    /// `calendar` is the one the dates were made in, and `locale` the view's (`data.md`).
+    func labelledAtEnds(first: Date, last: Date, calendar: Calendar, locale: Locale) -> some View {
         chartXAxis {
             AxisMarks(values: [first, last]) { _ in
-                AxisValueLabel(format: .dateTime.month().day())
+                AxisValueLabel(format: Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month().day())
             }
         }
     }

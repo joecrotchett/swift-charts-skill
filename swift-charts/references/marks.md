@@ -17,8 +17,6 @@ Each mark type and what it is for, and how mark positions are given. The types t
 | A region of interest behind other marks | `RectangleMark` with start and end | Shaded band or box |
 | Parts of a whole | `SectorMark` (iOS 17.0+), or one stacked `BarMark` | Pie, donut, single stacked bar |
 
-The mark follows from what the chart should communicate, not from the shape of the data.
-
 ## How mark positions are given
 
 `BarMark`, `RectangleMark`, `RuleMark` and `PointMark` have many initializers, but they follow one pattern. On each axis a mark takes one of three things:

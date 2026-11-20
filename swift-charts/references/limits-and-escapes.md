@@ -28,7 +28,7 @@ Designs that need SwiftUI beside or around the chart, or cannot be done.
 | Small multiples (a grid or stack of aligned charts) | Escape hatch | iOS 16.0 | No faceting in the framework: one `Chart` per group in SwiftUI layout, with a shared scale domain | `gallery/small-multiples.md` |
 | 3D bars, lines, areas or pies | Not feasible | | `Chart3D` accepts only points, rules, rectangles and surfaces. Nearest: a 2D grouped bar chart or heat map when the third dimension is a category, a 3D scatter when all three are numbers | `chart3d.md` |
 | Image export of a 3D chart | Escape hatch | iOS 26.0 | `ImageRenderer` draws a placeholder for `Chart3D`; draw a hosted window with `drawHierarchy`, which captures it in full (iOS): a `UIHostingController` (`safeAreaRegions = []`) in a `UIWindow(windowScene:)` of the presenting view's scene (a bare `UIWindow(frame:)` draws blank), shown and left to draw, then `drawHierarchy(in:afterScreenUpdates: true)` in a `UIGraphicsImageRenderer`; or export a 2D chart of the same data | `chart3d.md` |
-| Image export of a chart | Native | iOS 16.0 | `ImageRenderer(content:)` with `scale` set to the display scale and an explicit frame and background. It renders without the presenter's environment, the locale included (iOS): set `\.locale` and the colour scheme on the content | `limits-and-escapes.md` |
+| Image export of a chart | Native | iOS 16.0 | `ImageRenderer(content:)` with `scale` set to the display scale and an explicit frame and background. It renders without the presenter's environment, the locale included (iOS): set `\.locale` and the colour scheme on the content. A scrolling chart draws no marks this way, and a 3D chart only a placeholder | `interaction.md`, `chart3d.md` |
 | Image export of a scrolling chart | Escape hatch | iOS 17.0 | `ImageRenderer` draws a scrollable chart with no marks: render a second chart without the scrolling modifiers, its x domain fixed to the visible window | `interaction.md` |
 
 ### Marks and styling
@@ -55,7 +55,7 @@ Designs that need SwiftUI beside or around the chart, or cannot be done.
 | Drop shadow or blur on marks | Native | iOS 16.4 | `shadow`, `blur` | `mark-modifiers.md` |
 | A reusable chart element with its own type | Native | iOS 16.0 | Conform a struct to `ChartContent` | `composition.md` |
 | Graph of a mathematical function, a trend line over a scatter plot, a fitted curve over a histogram, or a band around any of them | Native | iOS 18.0 | `LinePlot` and `AreaPlot` with a function; the app computes any fit. Below iOS 18, sample the function into `LineMark` data | `gallery/function-plot.md`, `vectorized-plots.md` |
-| A very large collection drawn efficiently | Native | iOS 18.0 | Vectorized plots. Below iOS 18, bin or aggregate so there are fewer marks | `vectorized-plots.md` |
+| A very large collection | Native | iOS 18.0 | Vectorized plots, for simpler code over many points; measured no faster than marks, so bin or aggregate to make it cheaper, on any release | `vectorized-plots.md` |
 
 ### Axes and scales
 
@@ -135,5 +135,3 @@ The techniques the table relies on, and where each is written up:
 | A horizontal `ScrollView` around a wide chart | Scrolling on iOS 16 | The value axis scrolls away; no snapping | `interaction.md` |
 | `rotationEffect` and a clear sector | Gauges and partial rings | Everything in the chart rotates; half the frame is empty | `gallery/gauge.md` |
 | One `Chart` per group in a SwiftUI layout | Small multiples | Scales must be fixed by hand to match | `gallery/small-multiples.md` |
-
-Prefer a mark with an `annotation` whenever the thing being drawn belongs to a data value: marks stay aligned with the scales for free.

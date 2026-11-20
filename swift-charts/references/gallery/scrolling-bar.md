@@ -1,6 +1,6 @@
 # Scrolling bar chart
 
-No image: a scrollable chart cannot be drawn offscreen.
+No image: offscreen, a scrolling chart draws its axis and grid but no bars (`../interaction.md`).
 
 ## Visual signature
 

@@ -69,5 +69,5 @@ The bar and the tick share each month, and by default the element is a range of 
 
 ## Pitfalls
 
-- Give the date `unit: .month` on every mark that shares the axis. Without a unit a date is a single instant: bars become narrow slivers centred on the first moment of each month, and the first and last are cut in half by the plot edges.
+- Give the date `unit: .month` on every mark that shares the axis. Without a unit a date is a single instant: bars become narrow slivers centred on the first moment of each month, and the first and last hang half outside the plot, over the axis (`../data.md`).
 - Put the annotation on the `RuleMark`, not in an overlay: it then tracks the value when the data changes.

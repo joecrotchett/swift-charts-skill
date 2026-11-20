@@ -8,10 +8,10 @@ The full account, with the wording for each kind of chart, is in `accessibility-
 
 - **One accessibility element per position, not per mark.** The position is along the axis that holds the categories or the independent value: x for a vertical chart, y for horizontal bars. A single bar reads "Latte, 50". Marks sharing a position are summarised: a stack and grouped bars alike as their total, several lines as a span. On a number or date axis, more than a few marks are merged into stretches of the axis, each with a summary.
 - **Axes, the automatic legend and annotation views are not elements.** Views in a `chartOverlay` are, and on iOS so are views in a `chartBackground` and in `chartLegend(content:)`.
-- **A default Audio Graph** for most charts, titled "Chart", with no summary, the `.value` labels as axis titles, and each point described as its x value and a bare number: no units, and on a date axis no date (the axis goes over as seconds since 2001).
+- **A default Audio Graph** for most charts (none for pies, heat maps, timelines and other charts without a value on each axis; `accessibility-defaults.md` lists them), titled "Chart", with no summary, the `.value` labels as axis titles, and each point described as its x value and a bare number: no units, and on a date axis no date (the axis goes over as seconds since 2001). **Every chart gets a chart descriptor** (`audio-graph.md`).
 - **The words come from the code.** `.value` labels are spoken as axis names, and the label of a category or series is made plural inside summaries ("3 Sizes", "2 Stores"; with two encodings on the same field, "2 series"). Write every label as words a listener will understand, and a category's or series' label in the singular.
 
-That is a starting point. The framework knows the values and their labels, not the chart's purpose, its units, or how a date should be said. The rest of this file is what the app adds.
+That is a starting point. The framework knows the values and their labels, not the chart's purpose, its units, or how a date should be said. The rest of this file is what the app adds; keyboard, Switch Control and Voice Control navigation, colour and contrast, announcing changes and Dynamic Type apply to every chart too, and are in `accessibility-beyond-voiceover.md`.
 
 ## Decide what an element is
 
@@ -90,6 +90,8 @@ Four modifiers apply to a `Plot`, and to marks:
 | `accessibilityValue(_:)` | Says the value it shows |
 | `accessibilityHidden(_:)` | Hides it from assistive technologies |
 | `accessibilityIdentifier(_:)` | An identifier, for UI tests |
+
+There is no `accessibilityHint` on a mark or a `Plot`; put a hint on the chart view or on the control that changes it.
 
 Label and value accept a string, a `Text`, a `LocalizedStringKey` or a `LocalizedStringResource`, so they can be localized like any other text.
 
@@ -212,7 +214,7 @@ struct ElevationProfile: View {
 
 For a mark built from several, such as a box plot's whisker, box and median or a candlestick's wick and body, put the plot inside the custom `ChartContent` type so that a label given to it from outside describes the whole (`gallery/candlestick.md`). Where the marks are written inline, as in `gallery/box-plot.md`, the plot goes around them in the chart. Labels on plots change the elements only. The automatic Audio Graph is whatever it was, with its bare values, or absent; that is the chart descriptor's job.
 
-**On a vectorized plot** (`vectorized-plots.md`), whose key-path labels are not read, two routes work, read on iOS. A labelled `Plot` around a `PointPlot` of each portion's elements is read; VoiceOver orders elements by the top of their frames, though, not along x: portions of a scatter came out as 6–8, 8–10, 12–14, 10–12. A full-height clear band in each portion's `Plot`, as above, puts them in x order (read on iOS with `LineMark`s, stacked bars and one `PointMark` per day; not yet with a `PointPlot`). Or an `accessibilityRepresentation` whose portions each span the full height of the plot (a `RectangleMark` from the bottom of the y domain to the top) is read left to right. Put the chart descriptor on the representation; the Audio Graph keeps it. The plot stays as drawn, so marks and plot can share one representation. Code: `vectorized-plots.md`, *Accessibility*.
+**On a vectorized plot**, whose key-path labels are not read, give VoiceOver words with labelled portions or a representation: both routes, the order each is read in, and the code are under *Accessibility* in `vectorized-plots.md`.
 
 A labelled plot per mark turns the automatic merging off: 400 labelled plots are 400 stops. Label per mark only when the individual values matter, and per portion otherwise. As a guide: one series of up to about a month of days reads well a day at a time; several series over the same dates are best as one element per period holding every series (two series' points in one labelled `Plot` per day, the lines hidden outside it, read in date order on iOS); portions per series with identical bands come in no fixed order.
 
@@ -224,6 +226,7 @@ A labelled plot per mark turns the automatic merging off: 400 labelled plots are
 ```swift
 struct StackedBarsWithSimplerRepresentation: View {
     let orders: [DrinkOrder]
+    @Environment(\.locale) private var locale
 
     /// One total per drink, in the order the drawn chart shows them, with the sizes in words.
     private var totals: [(drink: String, cups: Int, detail: String)] {
@@ -232,7 +235,7 @@ struct StackedBarsWithSimplerRepresentation: View {
         return drinks.map { drink in
             let rows = orders.filter { $0.drink == drink }
             return (drink, rows.map(\.cups).reduce(0, +),
-                    rows.map { "\($0.size) \($0.cups)" }.formatted(.list(type: .and)))
+                    rows.map { "\($0.size) \($0.cups)" }.formatted(.list(type: .and).locale(locale)))
         }
     }
 
@@ -255,31 +258,19 @@ struct StackedBarsWithSimplerRepresentation: View {
                     BarMark(x: .value("Drink", total.drink), y: .value("Cups", total.cups))
                 }
                 .accessibilityLabel(total.drink)
-                .accessibilityValue("\(spokenCups(total.cups)): \(total.detail)")
+                .accessibilityValue("\(spokenCups(total.cups, locale: locale)): \(total.detail)")
             }
             .chartYScale(domain: cupsAxis)
             // The descriptor goes inside the representation: one on the drawn chart is lost.
             // The descriptor is written as in `audio-graph.md`: one series of the totals.
             .accessibilityChartDescriptor(DrinkTotalsDescriptor(
-                totals: totals.map { ($0.drink, $0.cups) }, cupsAxis: cupsAxis))
+                totals: totals.map { ($0.drink, $0.cups) }, cupsAxis: cupsAxis, locale: locale))
         }
     }
 }
 ```
 
 - **Elements with traits or a layout of their own:** `accessibilityChildren` (SwiftUI, iOS 15.0+) swaps a view's elements for those of views you supply, which are never drawn. Apply it to the plot area inside `chartPlotStyle`, so the views are laid out in the plot's frame; applied to the chart they fill the whole chart, axes included, and a chart with a colour encoding loses its automatic Audio Graph. The calendar recipe uses it to mark the first day of each month as a heading (`accessibilityAddTraits(.isHeader)`), which lets VoiceOver users jump between months (`gallery/calendar.md`).
-
-## The Audio Graph
-
-**Every chart gets a chart descriptor.** The automatic Audio Graph is titled "Chart", has no summary, gives bare numbers with no units, drops the dates of a date axis, and does not exist at all for pies, heat maps, timelines and other charts without a value on each axis. Writing the descriptor is in `audio-graph.md`.
-
-## Descriptions everyone reads
-
-A visible title and a one-line summary of the chart's message help every reader and are what a VoiceOver user meets first (`design.md`, *Descriptions*). They do not replace the labels or the descriptor.
-
-## Beyond VoiceOver
-
-Keyboard, Switch Control and Voice Control navigation, colour and contrast, announcing changes, and Dynamic Type are in `accessibility-beyond-voiceover.md`. They apply to every chart too.
 
 ## Testing a chart's accessibility
 
@@ -289,7 +280,6 @@ Keyboard, Switch Control and Voice Control navigation, colour and contrast, anno
 ## Pitfalls
 
 - **Labels that change while the data does not.** The chart keeps the accessibility elements it made for each data element's id. When a control changes only what the labels say (a toggle that relabels the same bars), the ids stay the same and VoiceOver keeps reading the old words, though the marks redraw. The chart descriptor is kept the same way, even when no element text changes: a control that changes only its range or summary leaves the Audio Graph with the first one. Give the chart a new identity built from every state that changes either, `.id("\(period)-\(mode)")` on the `Chart`. Read on iOS, elements and descriptors dumped before and after.
-
 - Treating the chart as an image with one label, when its purpose is the individual values.
 - Labelling every point of a dense chart whose purpose is the overall shape.
 - Labels on bare marks that share a position. They are not read; put them on a `Plot`.

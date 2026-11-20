@@ -160,7 +160,6 @@ Style it with `foregroundStyle`:
 
 - `.heightBased` colours by y value, which makes the shape easier to read. Use it by default. The ramp runs over the y scale's domain, not the data: widen the domain and the peaks lose their warmest colour. `heightBased(yRange:)` exists but changed nothing seen on iOS 27.
 - `.normalBased` colours by the direction the surface faces.
-
 - A gradient such as `LinearGradient` or `EllipticalGradient`, or a plain colour.
 
 <!-- snippet: Gallery/Chart3DRecipes.swift#surface-gradient -->
@@ -281,11 +280,11 @@ struct ConfiguredScatter3D: View {
 }
 ```
 
+## Accessibility
+
+A `Chart3D` gives assistive technologies nothing: no elements and no Audio Graph, one unlabelled element in the tree (read on iOS). Supply both. For points in groups, put `accessibilityRepresentation` on the chart holding an undrawn 2D `Chart` with one labelled `Plot` per group, and the chart descriptor inside the representation (`accessibility.md`); for a surface, make the chart one element (`accessibilityElement(children: .ignore)`, a label and a value) and attach the descriptor to it. Both were read on iOS, and a chart with points and a surface takes one representation with a `Plot` per group and one for the surface. Give the third dimension to the descriptor as an additional axis (`audio-graph.md`), and sample a surface's rows through every figure the summary names. Rotation needs a drag: offer the presets as buttons too (a picker keeps a stale selection after a drag). The `.id` that refreshes elements and descriptor also resets `@State` in the view it is on, so keep the pose as plain angles in the view model and bind the chart to them, or every toggle undoes the reader's rotation.
+
 ## Pitfalls
 
 - `ImageRenderer` draws a placeholder for a `Chart3D`. Drawing a hosted window with `drawHierarchy` captures it in full (iOS), or export a 2D twin.
 - Expecting 2D marks or modifiers to work in `Chart3D`.
-
-## Accessibility
-
-A `Chart3D` gives assistive technologies nothing: no elements and no Audio Graph, one unlabelled element in the tree (read on iOS). Supply both. For points in groups, put `accessibilityRepresentation` on the chart holding an undrawn 2D `Chart` with one labelled `Plot` per group, and the chart descriptor inside the representation (`accessibility.md`); for a surface, make the chart one element (`accessibilityElement(children: .ignore)`, a label and a value) and attach the descriptor to it. Both were read on iOS, and a chart with points and a surface takes one representation with a `Plot` per group and one for the surface. Give the third dimension to the descriptor as an additional axis (`audio-graph.md`), and sample a surface's rows through every figure the summary names. Rotation needs a drag: offer the presets as buttons too (a picker keeps a stale selection after a drag). The `.id` that refreshes elements and descriptor also resets `@State` in the view it is on, so keep the pose as plain angles in the view model and bind the chart to them, or every toggle undoes the reader's rotation.

@@ -87,6 +87,5 @@ struct HistogramWithCurve: View {
 ## Pitfalls
 
 - `NumberBins(data:desiredCount:)` returns no bins at all when the data has a single distinct value (one value, or every value equal), so the chart is empty. Give it a range of its own, `NumberBins(range: v ... v + 1, desiredCount:)`, in that case.
-
 - `desiredCount` is approximate; check how many bins came back.
 - All of the binning pitfalls in `../data.md`.

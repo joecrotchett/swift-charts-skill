@@ -68,7 +68,7 @@ struct RuleTimeline: View {
 
 ## Accessibility
 
-By default each row is one element that says only its name, with no start, end or duration, and there is no automatic Audio Graph. Wrap each bar in a `Plot` labelled with the row's name and valued with its start and end, and write a chart descriptor (`../accessibility.md`, `../audio-graph.md`).
+By default a row of one bar is read as a range of date-times with no value: a row spanning days as its name, then its start and end; a shift within one day, as this recipe's are, as the hour around its middle, then the name, so its real start, end and duration are lost (`../accessibility-defaults.md`). There is no automatic Audio Graph. Wrap each bar in a `Plot` labelled with the row's name and valued with its start and end, and write a chart descriptor (`../accessibility.md`, `../audio-graph.md`). A descriptor's data point has one y value, not an interval (`AXDataPoint` takes `x:`, `y:`, `additionalValues:` and `label:`), so a timeline's descriptor gives each interval as its own point, or states the intervals in its summary.
 
 ## Pitfalls
 

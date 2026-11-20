@@ -102,20 +102,22 @@ struct SelectionPopover: View {
 struct RangeSelectionLineChartRecipe: View {
     let days: [DailySales]
     @State var selectedRange: ClosedRange<Date>?
+    /// The calendar the dates were recorded in: days are cut in it, not in the device's (`data.md`).
+    var calendar = Calendar(identifier: .gregorian)
 
     var body: some View {
         Chart {
             ForEach(days) { item in
                 LineMark(
-                    x: .value("Day", item.day, unit: .day),
+                    x: .value("Day", item.day, unit: .day, calendar: calendar),
                     y: .value("Cups", item.cups)
                 )
             }
 
             if let selectedRange {
                 Plot {
-                    RuleMark(x: .value("Range start", selectedRange.lowerBound, unit: .day))
-                    RuleMark(x: .value("Range end", selectedRange.upperBound, unit: .day))
+                    RuleMark(x: .value("Range start", selectedRange.lowerBound, unit: .day, calendar: calendar))
+                    RuleMark(x: .value("Range end", selectedRange.upperBound, unit: .day, calendar: calendar))
                 }
                 .foregroundStyle(.gray.opacity(0.3))
                 .accessibilityHidden(true)
@@ -125,7 +127,9 @@ struct RangeSelectionLineChartRecipe: View {
                     position: .top, spacing: 0,
                     overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
                 ) { context in
-                    Text("\(selectedRange.lowerBound, format: .dateTime.month().day()) – \(selectedRange.upperBound, format: .dateTime.month().day())")
+                    // Formatted to strings in the data's time zone: `Text(date, format:)` uses the device's on iOS.
+                    let day = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).month().day()
+                    Text("\(selectedRange.lowerBound.formatted(day)) – \(selectedRange.upperBound.formatted(day))")
                         .font(.callout)
                         .frame(minWidth: max(context.targetSize.width, 0), alignment: .leading)
                         .fixedSize()

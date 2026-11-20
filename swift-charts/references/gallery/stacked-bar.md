@@ -50,7 +50,7 @@ struct SingleStackedBar: View {
 }
 ```
 
-**Separated segments.** A strip of empty space between segments helps people see each one, as in the iPhone Storage bar. Clip each mark to a slightly inset rectangle. The inset comes off every side: neighbours are twice the inset apart (1.5 leaves 3 points), and the whole bar is that much shorter and narrower.
+**Separated segments.** A strip of empty space between segments helps people see each one, as in the iPhone Storage bar. Clip each mark to a slightly inset rectangle. The inset comes off every side: neighbours are twice the inset apart (1.5 leaves 3 points), and the whole bar is that much shorter and narrower. The hairline the framework leaves between uncoloured stacked pieces (`README.md`) is not separation between colours: coloured segments that touch get their own gap.
 
 ![One horizontal bar of five coloured segments with thin white gaps between them, and a legend.](../../assets/gallery/stacked-bar-separated.png)
 

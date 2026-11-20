@@ -121,7 +121,7 @@ struct TrendWithBand: View {
 
 ![Blue points along one horizontal axis, piled into short columns wherever values are close together.](../../assets/gallery/beeswarm.png)
 
-A strip of points along one axis where points that would overlap are stacked instead, so the height of a pile shows how many values fall there. Swift Charts does not place points for you: compute a row for each point in the data (the first free row among its close neighbours), plot the row on a hidden y axis, and label each point's `Plot` so the row numbers are not read out as data.
+A strip of points along one axis where points that would overlap are stacked instead, so the height of a pile shows how many values fall there. Swift Charts does not place points for you: compute a row for each point in the data (the first free row among its close neighbours), plot the row on a hidden y axis, and label each point's `Plot` so the row numbers are not read out as data. Rows are computed in data units, so at a narrower width or a wider domain neighbouring points can touch again: choose `crowding` for the narrowest width the chart is shown at. Its value axis includes zero, like any number scale (`../scales.md`); set the x domain when zero is not meaningful.
 
 <!-- snippet: Community/CommunityPatterns.swift#beeswarm -->
 ```swift
